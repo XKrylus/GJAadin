@@ -2,6 +2,7 @@ package com.example.gja;
 
 import javax.servlet.annotation.WebServlet;
 
+import com.example.gja.logic.LoginProcess;
 import com.vaadin.annotations.Theme;
 import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.server.VaadinRequest;
@@ -20,11 +21,32 @@ public class GjaUI extends UI {
 	@VaadinServletConfiguration(productionMode = false, ui = GjaUI.class)
 	public static class Servlet extends VaadinServlet {
 	}
+	
+	protected Gui login = new Gui();
+	protected GuiMain guiMain = new GuiMain();
+	protected LoginProcess loginProcess = new LoginProcess();
+	
+	protected void processLogin() {
+		login.buttonLogin.addClickListener(new Button.ClickListener() {
+			
+			@Override
+			public void buttonClick(ClickEvent event) {
+				if(loginProcess.confirmUser(login.textFieldLogin.getValue(), login.textFieldPassword.getValue())) {
+					setContent(guiMain);
+				}
+				else {
+					login.textFieldLogin.setValue("Login failed");
+					login.textFieldLogin.setValue("");
+				}
+			}
+		});
+	}
 
 	@Override
 	protected void init(VaadinRequest request) {
-		Gui gui = new Gui();
-		setContent(gui);
+		
+		setContent(login);
+		processLogin();
 	}
 
 }
