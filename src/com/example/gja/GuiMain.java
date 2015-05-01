@@ -1,18 +1,26 @@
 package com.example.gja;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Locale;
 import java.util.Set;
+
+import org.openqa.selenium.remote.server.handler.GetWindowPosition;
 
 import com.example.gja.logic.ProcessRequest;
 import com.example.gja.objects.Category;
 import com.example.gja.objects.Comment;
 import com.example.gja.objects.Content;
+import com.example.gja.objects.Content.ContentType;
 import com.example.gja.objects.Note;
 import com.example.gja.objects.Note.state;
 import com.example.gja.objects.Tag;
+import com.ibm.icu.text.DateFormat;
+import com.vaadin.data.Item;
 import com.vaadin.data.Property;
 import com.vaadin.data.util.IndexedContainer;
 import com.vaadin.server.ThemeResource;
@@ -48,11 +56,31 @@ public class GuiMain  extends VerticalLayout{
 	boolean contentDownloadRemove = false;
 	ArrayList<Tag> tagsGlobal = new  ArrayList<Tag>();
 	
+	//Table columns
+	private static String columnTitle = "Title";
+	private static String columnDescription = "Description";
+	private static String columnRemindOn = "Remind On";
+	private static String columnExpire = "Input Expire";
+	private static String columnComment = "Comment";
+	private static String columnTag = "Tag";
+	private static String columnContent = "Content";
+	private static String columnDownloadEditContent = "Show Content";
+	private static String columnRemove = "Remove";
+	
+	
 	ThemeResource contentPlaceholder = new ThemeResource("images/GJAlogo.png");
-	ThemeResource contentImg = new ThemeResource("images/img.png");
+	ThemeResource contentImg = new ThemeResource("images/image.png");
 	ThemeResource contentVideo = new ThemeResource("images/video.png");
 	ThemeResource contentAudio = new ThemeResource("images/audio.png");
 	ThemeResource contentNotSet = new ThemeResource("images/notSet.png");
+	
+	
+	//GjaUI
+	GjaUI parentUI;
+	
+	//ShowContent
+	ShowContent showContent;
+	
 	
 	/**
 	 * ??!
@@ -69,22 +97,23 @@ public class GuiMain  extends VerticalLayout{
 			String title = new String(notes.get(i).getTitle());
 			
 			ThemeResource imageResource;
-			/*switch(notes.get(i).getContent().getType()) {
-			case "IMG" :
+			Embedded content;
+			switch(notes.get(i).getContent().getType()) {
+			case IMG :
 				imageResource = contentImg;
 				break;
-			case "VIDEO" :
+			case VIDEO :
 				imageResource = contentVideo;
 				break;
-			case "AUDIO" :
+			case AUDIO  :
 				imageResource = contentAudio;
 				break;
 			default :
 				imageResource = contentNotSet;
 				break;
-			}*/
-			imageResource = contentPlaceholder;
-			Embedded content = new Embedded("Content", imageResource);
+			}
+			//imageResource = contentPlaceholder;
+			content = new Embedded("Content", imageResource);
 			String description = new String(notes.get(i).getDescription());
 			
 			Date remindOn = notes.get(i).getReminder();
@@ -157,30 +186,31 @@ public class GuiMain  extends VerticalLayout{
 		
 		IndexedContainer ic = new IndexedContainer();
 		
-		table.addContainerProperty("Title",           String.class,     null);		
-		table.addContainerProperty("Description",     String.class,     null);
-		table.addContainerProperty("Remind on",       Date.class,    null);
-		table.addContainerProperty("Input Expire",    Date.class,    null);
-		table.addContainerProperty("Comment",           TextArea.class, null);
-		table.addContainerProperty("Tag",           MenuBar.class, null);
-		table.addContainerProperty("Content",         Embedded.class,     null);
+		table.addContainerProperty(columnTitle,         String.class,   null);		
+		table.addContainerProperty(columnDescription,   String.class,   null);
+		table.addContainerProperty(columnRemindOn,      Date.class,    	null);
+		table.addContainerProperty(columnExpire,    	Date.class,    	null);
+		table.addContainerProperty(columnComment,       TextArea.class, null);
+		table.addContainerProperty(columnTag,           MenuBar.class, 	null);
+		table.addContainerProperty(columnContent,       Embedded.class, null);
 		
-		table.addGeneratedColumn("Download/Edit Content", new Table.ColumnGenerator() {
+		table.addGeneratedColumn(columnDownloadEditContent, new Table.ColumnGenerator() {
 			
 			@SuppressWarnings("deprecation")
 			@Override
 			public Object generateCell(Table source, Object itemId, Object columnId) {
 		        /* When the check box value changes, add/remove the itemId from the selectedItemIds set */
-		        final Button btn = new Button("Download/Edit Content");
+		        final Button btn = new Button("Show Content");
 		        btn.addClickListener(new Button.ClickListener() {
 					@Override
 					public void buttonClick(ClickEvent event) {
 						if(editable) {
-							
+							//System.out.printf("ITEM ID: %s COLUMN ID: %s\n", itemId, columnId);
 						}
 						else {
 							request.downloadContent(notes.get((int) itemId).getContent());
 							System.out.printf("Now downloading file for note %d\n", (int) itemId);
+							parentUI.addWindow(showContent = new ShowContent(notes.get((int) itemId).getContent()));
 						}
 					}
 		          });
@@ -188,7 +218,7 @@ public class GuiMain  extends VerticalLayout{
 		        }
 		});
 		
-		table.addGeneratedColumn("Remove", new Table.ColumnGenerator() {
+		table.addGeneratedColumn(columnRemove, new Table.ColumnGenerator() {
 			
 			@SuppressWarnings("deprecation")
 			@Override
@@ -214,8 +244,32 @@ public class GuiMain  extends VerticalLayout{
 		
 		return table;
 	}
+	
+	/**
+	 * Updates LinkedList Notes after editing Table
+	 * Size of notes will not change during edit
+	 */
+	protected void editedNotes() {
+		for(int i = 0; i < table.size(); i++) {
+			Item item = table.getItem(i);
+			//Title
+			notes.get(i).setTitle(String.valueOf(item.getItemProperty(columnTitle).getValue()));
+			//Description
+			notes.get(i).setDescription(String.valueOf(item.getItemProperty(columnDescription).getValue()));
+			//Date - reminds on
+			notes.get(i).setReminder((Date) item.getItemProperty(columnRemindOn).getValue());
+			//Date - expires on
+			notes.get(i).setExpire((Date) item.getItemProperty(columnExpire).getValue());
+			//Content - TODO
+			//Attachments - TODO
+			//Comments - TODO (??)
+		}
+		loadTable(notes);
+	}
 
-	public GuiMain() {
+	public GuiMain(GjaUI ui) {
+		
+		parentUI = ui;
 		
 		//this.addComponent(new Label("Hello Bena!"));
 		this.setSizeFull();
@@ -269,6 +323,14 @@ public class GuiMain  extends VerticalLayout{
 		      public void buttonClick(Button.ClickEvent event) {
 				editable = !editable;
 				table.setEditable(editable);
+				//Update notes after leaving edit mode
+				if(!editable) {
+					editedNotes();
+				}
+				//Disable buttons while in edit mode
+				notesSpaceButtons.getComponent(0).setEnabled(!editable);
+				addNote.setEnabled(!editable);
+				topMenuBar.setEnabled(!editable);
 		      }
 		    }));
 		
@@ -279,12 +341,12 @@ public class GuiMain  extends VerticalLayout{
 		}
 		
 		//Initial notes
-		String[] title = {"Nakup", "Prodej"};
-		Content[] content = {null, null};
-		String[] description = {"Mleko 4 rohliky", "Vrtacka Bena"};
-		Date[] inputReminder = {new Date(), new Date()};
-		Date[] inputExpire = {new Date(), new Date()};
-		state[] state = {null, null};
+		String[] title = {"Nakup", "Prodej", "Vydej"};
+		Content[] content = {new Content(ContentType.IMG, "images/logo.png"), new Content(ContentType.AUDIO, "audio/record.mp3"), new Content(ContentType.VIDEO, "video/video.mp4")};
+		String[] description = {"Mleko 4 rohliky", "Vrtacka Bena", "4 lahve praveho Hamsika a jedna Zelena"};
+		Date[] inputReminder = {new Date(), new Date(), new Date()};
+		Date[] inputExpire = {new Date(), new Date(), new Date()};
+		state[] state = {null, null, null};
 		ArrayList<Boolean> setTags = new  ArrayList<Boolean>();
 		for(int i = 0; i != tagsGlobal.size(); i++) {
 			Boolean tag;

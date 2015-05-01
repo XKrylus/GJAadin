@@ -13,8 +13,8 @@ public class Content {
 		this.type = type;
 	}
 	
-	public String getType(){
-		return this.type.toString();
+	public ContentType getType(){
+		return this.type;
 	}
 	
 	public String getValue(){

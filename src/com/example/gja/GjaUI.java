@@ -1,7 +1,9 @@
 package com.example.gja;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
+import java.util.LinkedList;
 
 import javax.servlet.annotation.WebServlet;
 
@@ -11,6 +13,7 @@ import com.example.gja.objects.Comment;
 import com.example.gja.objects.Content;
 import com.example.gja.objects.Note;
 import com.example.gja.objects.Tag;
+import com.example.gja.objects.Content.ContentType;
 import com.example.gja.objects.Note.state;
 import com.vaadin.annotations.Theme;
 import com.vaadin.annotations.VaadinServletConfiguration;
@@ -27,12 +30,12 @@ import com.vaadin.ui.UI;
 public class GjaUI extends UI {
 
 	@WebServlet(value = "/*", asyncSupported = true)
-	@VaadinServletConfiguration(productionMode = false, ui = GjaUI.class)
+	@VaadinServletConfiguration(productionMode = false, ui = GjaUI.class, widgetset = "com.example.gja.widgetset.GjaWidgetset")
 	public static class Servlet extends VaadinServlet {
 	}
 	
 	protected Gui login = new Gui();
-	protected GuiMain guiMain = new GuiMain();
+	protected GuiMain guiMain = new GuiMain(this);
 	protected LoginProcess loginProcess = new LoginProcess();
 	
 	protected void processLogin() {
@@ -62,7 +65,7 @@ public class GjaUI extends UI {
 
 			@Override
 			public void buttonClick(ClickEvent event) {
-				GuiAddNote addNote = new GuiAddNote(guiMain.notes);
+				GuiAddNote addNote = new GuiAddNote(guiMain.notes, guiMain.tagsGlobal);
 				addWindow(addNote);
 				addNote.addNote.addClickListener(new Button.ClickListener() {
 					
@@ -71,11 +74,31 @@ public class GjaUI extends UI {
 					public void buttonClick(ClickEvent event) {
 						state[] state = {null, null};
 						ArrayList<Boolean> tags = new  ArrayList<Boolean>();
+						boolean tagSet = false;
+						Content[] content = {new Content(ContentType.IMG, "images/logo.png"), new Content(ContentType.AUDIO, "audio/record.wav"), 
+								new Content(ContentType.VIDEO, "video/logo.png")};
+						String currentString = addNote.tagsListBuilder.getValue().toString();
+						currentString = currentString.replaceAll("\\[\\(\\)\\]", "");
+						currentString = currentString.replaceAll("\\[", "");
+						currentString = currentString.replaceAll("\\]", "");
+						String parts[] = currentString.split(", ");
+						for(int i = 0; i < guiMain.tagsGlobal.size(); i++) {
+							for(int j = 0; j < parts.length; j++) {
+								if(guiMain.tagsGlobal.get(i).getValue().equals(parts[j])) {
+									tagSet = true;
+									tags.add(true);
+								}
+							}
+							if(!tagSet) {
+								tags.add(false);
+							}
+							tagSet = false;
+						}
 						ArrayList<Category> categories = new ArrayList<Category>();
 						ArrayList<Comment> comments = new ArrayList<Comment>();
 						ArrayList<Content> attachments = new ArrayList<Content>();
 						
-						guiMain.notes.addLast(new Note(addNote.title.getValue(), null, addNote.description.getValue(), guiMain.currentUser,
+						guiMain.notes.addLast(new Note(addNote.title.getValue(), content[0], addNote.description.getValue(), guiMain.currentUser,
 								addNote.remindsOn.getValue(), addNote.expiresOn.getValue(), state[0], tags, categories, comments, attachments));
 						guiMain.loadTable(guiMain.notes);
 						addNote.close();
@@ -128,6 +151,8 @@ public class GjaUI extends UI {
 		};
 		
 		guiMain.editTags.setCommand(editTags);
+		
+		
 	}
 	
 
