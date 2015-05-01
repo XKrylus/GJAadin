@@ -20,7 +20,7 @@ public class Note {
 	private Date created;	//Date of note creation
 	private Date expire;	//Date of note creation
 	private state state;//state of note (standard, warning, confirmed(but not disposed of))
-	private ArrayList<Tag> tags;	
+	private ArrayList<Boolean> tags;	
 	private ArrayList<Category> categories; 
 	private ArrayList<Comment> comments;
 
@@ -31,7 +31,7 @@ public class Note {
 	 * @param inputExpire		expire date of note
 	 * @param inputTag			selected tags for note
 	 */
-	public Note(String title, Content content, String desc, String user, Date inputReminder, Date inputExpire, state state, ArrayList<Tag> tags,
+	public Note(String title, Content content, String desc, String user, Date inputReminder, Date inputExpire, /*PRYC*/state state, ArrayList<Boolean> tags,
 				ArrayList<Category> categories, ArrayList<Comment> comments, ArrayList<Content> attachments) {
 		this.title = title;
 		this.content = content;
@@ -41,11 +41,12 @@ public class Note {
 		this.state = state.DOT;
 		this.user = user;
 		this.description = desc;
-		if(!tags.equals(null)) {
+		/*if(!tags.equals(null)) {
 			this.tags = tags;
 		} else {
 			this.tags = new ArrayList<Tag>();
-		}
+		}*/
+		this.tags = tags;
 		
 		if(!categories.equals(null)) {
 			this.categories = categories;
@@ -155,15 +156,15 @@ public class Note {
 	/**
 	 * @return the tag
 	 */
-	public ArrayList<Tag> getTags() {
+	public ArrayList<Boolean> getTags() {
 		return this.tags;
 	}
 
 	/**
 	 * @param tag the tag to set
 	 */
-	public void addTag(Tag tag) {
-		this.tags.add(tag);
+	public void setTag(Boolean value, int tag) {
+		this.tags.set(tag, value);
 	}
 	
 	public void removeTag(Tag tag){

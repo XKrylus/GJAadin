@@ -4,6 +4,7 @@ import java.awt.TextField;
 import java.util.LinkedList;
 
 import com.example.gja.objects.Note;
+import com.vaadin.shared.ui.datefield.Resolution;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.DateField;
@@ -24,8 +25,8 @@ public class GuiAddNote extends Window {
 	//Components
 	protected Label nameLabel = new Label("Name:");
 	protected Label commentsLabel = new Label("Comments:");
-	protected TextArea name = new TextArea();
-	protected TextArea comments = new TextArea();
+	protected TextArea title = new TextArea();
+	protected TextArea description = new TextArea();
 	protected DateField remindsOn = new DateField();
 	protected DateField expiresOn = new DateField();
 	
@@ -38,6 +39,7 @@ public class GuiAddNote extends Window {
 		
 		setClosable(false);
 		setResizable(false);
+		this.center();
 		
 		VerticalLayout subContent = new VerticalLayout();
 		subContent.setMargin(true);
@@ -47,25 +49,23 @@ public class GuiAddNote extends Window {
 	    //subContent.setWidth("400");
 	    
 	    subContent.addComponent(nameLabel);
-	    subContent.addComponent(name);
+	    subContent.addComponent(title);
 	    subContent.addComponent(commentsLabel);
-	    subContent.addComponent(comments);
+	    subContent.addComponent(description);
 	    
 	    remindsOn.setCaption("Reminds on");
-	    
+	    remindsOn.setResolution(Resolution.SECOND);
 	    subContent.addComponent(remindsOn);
 	    
 	    expiresOn.setCaption("Expires on");
-	    
+	    expiresOn.setResolution(Resolution.SECOND);
 	    subContent.addComponent(expiresOn);
 	    
 	    HorizontalLayout buttonLayout = new HorizontalLayout();
 	    subContent.addComponent(buttonLayout);
 	    buttonLayout.addComponent(addNote);
 	    buttonLayout.addComponent(cancel);
-	        
-	    // Center it in the browser window
-	    this.center();
+	    
 	    
 	    cancel.addClickListener(new Button.ClickListener() {
 			

@@ -1,6 +1,7 @@
 package com.example.gja;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import javax.servlet.annotation.WebServlet;
 
@@ -17,6 +18,8 @@ import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinServlet;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
+import com.vaadin.ui.MenuBar.MenuItem;
+import com.vaadin.ui.MenuBar;
 import com.vaadin.ui.UI;
 
 @SuppressWarnings("serial")
@@ -50,7 +53,7 @@ public class GjaUI extends UI {
 		});
 	}
 	
-	protected void actionListeners() {
+	protected void clickListeners() {
 		guiMain.addNote.addClickListener(new Button.ClickListener() {
 			/**
 			 * ??!
@@ -67,12 +70,12 @@ public class GjaUI extends UI {
 					@Override
 					public void buttonClick(ClickEvent event) {
 						state[] state = {null, null};
-						ArrayList<Tag> tags = new  ArrayList<Tag>();
+						ArrayList<Boolean> tags = new  ArrayList<Boolean>();
 						ArrayList<Category> categories = new ArrayList<Category>();
 						ArrayList<Comment> comments = new ArrayList<Comment>();
 						ArrayList<Content> attachments = new ArrayList<Content>();
 						
-						guiMain.notes.addLast(new Note(addNote.name.getValue(), null, addNote.comments.getValue(), guiMain.currentUser,
+						guiMain.notes.addLast(new Note(addNote.title.getValue(), null, addNote.description.getValue(), guiMain.currentUser,
 								addNote.remindsOn.getValue(), addNote.expiresOn.getValue(), state[0], tags, categories, comments, attachments));
 						guiMain.loadTable(guiMain.notes);
 						addNote.close();
@@ -80,6 +83,51 @@ public class GjaUI extends UI {
 				}); 
 			}
 		});
+		MenuBar.Command editTags = new MenuBar.Command() {
+			
+			@Override
+			public void menuSelected(MenuItem selectedItem) {
+				GuiEditTags editTags = new GuiEditTags(guiMain.tagsGlobal);
+				addWindow(editTags);
+				editTags.addTag.addClickListener(new Button.ClickListener() {
+					
+					@Override
+					public void buttonClick(ClickEvent event) {
+						guiMain.tagsGlobal.add(new Tag(editTags.nameOfTag.getValue()));
+						editTags.loadTags(guiMain.tagsGlobal);
+						guiMain.loadTable(guiMain.notes);
+					}
+				});
+				editTags.editTag.addClickListener(new Button.ClickListener() {
+					
+					@Override
+					public void buttonClick(ClickEvent event) {
+						// TODO Auto-generated method stub
+						
+					}
+				});
+				editTags.removeTag.addClickListener(new Button.ClickListener() {
+					
+					@Override
+					public void buttonClick(ClickEvent event) {
+						int j = 0;
+						 for (Iterator i = editTags.tags.getItemIds().iterator(); i.hasNext();)  {
+
+					            Object iid = (Object) i.next();
+					            if(editTags.tags.isSelected(iid))
+					            {
+					            	guiMain.tagsGlobal.remove(j);
+					            }
+					            j++;
+					        }
+						 editTags.loadTags(guiMain.tagsGlobal);
+						 guiMain.loadTable(guiMain.notes);
+					}
+				});
+			}
+		};
+		
+		guiMain.editTags.setCommand(editTags);
 	}
 	
 
@@ -87,7 +135,7 @@ public class GjaUI extends UI {
 	protected void init(VaadinRequest request) {
 		
 		setContent(login);
-		actionListeners();
+		clickListeners();
 		processLogin();
 	}
 
