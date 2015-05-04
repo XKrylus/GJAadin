@@ -21,7 +21,7 @@ public class Note {
 	private Date expire;	//Date of note creation
 	private state state;//state of note (standard, warning, confirmed(but not disposed of))
 	private ArrayList<Boolean> tags;	
-	private ArrayList<Category> categories; 
+	private int categories;
 	private ArrayList<Comment> comments;
 
 	/**
@@ -32,7 +32,7 @@ public class Note {
 	 * @param inputTag			selected tags for note
 	 */
 	public Note(String title, Content content, String desc, String user, Date inputReminder, Date inputExpire, /*PRYC*/state state, ArrayList<Boolean> tags,
-				ArrayList<Category> categories, ArrayList<Comment> comments, ArrayList<Content> attachments) {
+				int categories, ArrayList<Comment> comments, ArrayList<Content> attachments) {
 		this.title = title;
 		this.content = content;
 		this.reminder = inputReminder;
@@ -48,11 +48,7 @@ public class Note {
 		}*/
 		this.tags = tags;
 		
-		if(!categories.equals(null)) {
-			this.categories = categories;
-		} else {
-			this.categories = new ArrayList<Category>();
-		}
+		this.categories = categories;
 		
 		if(!comments.equals(null)) {
 			this.comments = comments;
@@ -174,23 +170,25 @@ public class Note {
 		}
 	}
 	
-	public ArrayList<Category> getCategories(){
+	public int getCategories(){
 		return this.categories;
 	}
 	
-	public void addCategory(Category category) {
-		this.categories.add(category);
-	}
-	
-	public void removeCategory(Category category){
-		int index = 0;
-		if((index = this.categories.indexOf(category)) != -1){
-			this.categories.remove(index);
-		}
+	public void setCategory(int category) {
+		this.categories = category;
 	}
 	
 	public ArrayList<Comment> getComments(){
 		return this.comments;
+	}
+	
+	public void setComments(ArrayList<Comment> comments){
+		if(!comments.equals(null)) {
+			this.comments = new ArrayList<Comment>();
+			this.comments = comments;
+		} else {
+			this.comments = new ArrayList<Comment>();
+		}
 	}
 	
 	public void addComment(Comment comment) {

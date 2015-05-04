@@ -2,7 +2,7 @@ package com.example.gja.objects;
 
 public class Content {
 	public enum ContentType {
-		IMG, VIDEO, AUDIO
+		IMG, VIDEO, AUDIO, NONE
 	}
 	
 	private ContentType type;

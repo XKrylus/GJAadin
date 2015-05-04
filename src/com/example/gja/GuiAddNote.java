@@ -16,6 +16,7 @@ import com.vaadin.ui.Button;
 import com.vaadin.ui.DateField;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Label;
+import com.vaadin.ui.RichTextArea;
 import com.vaadin.ui.TextArea;
 import com.vaadin.ui.TwinColSelect;
 import com.vaadin.ui.Upload;
@@ -36,12 +37,10 @@ public class GuiAddNote extends Window {
 	protected Label titleLabel = new Label("Title:");
 	protected Label descriptionLabel = new Label("Description:");
 	protected TextArea title = new TextArea();
-	protected TextArea description = new TextArea();
+	protected RichTextArea description = new RichTextArea();
 	protected DateField remindsOn = new DateField();
 	protected DateField expiresOn = new DateField();
 	protected TwinColSelect tagsListBuilder = new TwinColSelect();
-	
-	Upload content = new Upload();
 	
 	protected boolean reloadTable = false;
 	
@@ -52,6 +51,7 @@ public class GuiAddNote extends Window {
 		
 		setClosable(false);
 		setResizable(false);
+		setHeight("800");
 		center();
 		
 		VerticalLayout subContent = new VerticalLayout();
@@ -85,10 +85,6 @@ public class GuiAddNote extends Window {
 	    tagsListBuilder.setCaption("Tags");
 	    tagsListBuilder.setContainerDataSource((Container) tagsContainer);
 	    subContent.addComponent(tagsListBuilder);
-	    
-	    content.setCaption("Upload Content");
-	    content.setButtonCaption("Upload file");
-	    subContent.addComponent(content);
 	    
 	    HorizontalLayout buttonLayout = new HorizontalLayout();
 	    subContent.addComponent(buttonLayout);

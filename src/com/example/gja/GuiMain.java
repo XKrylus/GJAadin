@@ -11,6 +11,9 @@ import java.util.Set;
 
 import org.openqa.selenium.remote.server.handler.GetWindowPosition;
 
+import com.example.gja.guiObjects.CommentCell;
+import com.example.gja.guiObjects.ContentCell;
+import com.example.gja.guiObjects.LabelRichCell;
 import com.example.gja.logic.ProcessRequest;
 import com.example.gja.objects.Category;
 import com.example.gja.objects.Comment;
@@ -23,6 +26,7 @@ import com.ibm.icu.text.DateFormat;
 import com.vaadin.data.Item;
 import com.vaadin.data.Property;
 import com.vaadin.data.util.IndexedContainer;
+import com.vaadin.event.MouseEvents;
 import com.vaadin.server.ThemeResource;
 import com.vaadin.ui.*;
 import com.vaadin.ui.Button.ClickEvent;
@@ -34,27 +38,32 @@ public class GuiMain  extends VerticalLayout{
 	public String currentUser = "dev";
 	
 	//Class for server handling
-	ProcessRequest request = new ProcessRequest();
+	public ProcessRequest request = new ProcessRequest();
 	
 	//TopMenu Components
 	Label topFlag = new Label("Flag");
 	Label topName = new Label(currentUser);
 	Label gap = new Label();
 	Button addNote = new Button();
+	Button edit = new Button();
 	MenuBar topMenuBar = new MenuBar();
 	com.vaadin.ui.MenuBar.MenuItem topMenuBarOptions;
 	MenuItem editTags;
 	
 	//List with Notes
-	LinkedList<Note> notes = new LinkedList<Note>();
+	public LinkedList<Note> notes = new LinkedList<Note>();
 	
 	//Table
-	Table table = new Table("Notes table");
+	TreeTable table = new TreeTable("Notes table");
 	final Set<Object> selectedItemIds = new HashSet<Object>();
 	//final Set<Object> selectedItemIds2 = new HashSet<Object>();
 	boolean editable = false;
 	boolean contentDownloadRemove = false;
+	//GLobal size of tree on creation - because Vaadin TreeTable.size()...
+	int tableSize = 0;
+	
 	ArrayList<Tag> tagsGlobal = new  ArrayList<Tag>();
+	ArrayList<Category> categoriesGlobal = new ArrayList<Category>();
 	
 	//Table columns
 	private static String columnTitle = "Title";
@@ -67,19 +76,14 @@ public class GuiMain  extends VerticalLayout{
 	private static String columnDownloadEditContent = "Show Content";
 	private static String columnRemove = "Remove";
 	
-	
-	ThemeResource contentPlaceholder = new ThemeResource("images/GJAlogo.png");
-	ThemeResource contentImg = new ThemeResource("images/image.png");
-	ThemeResource contentVideo = new ThemeResource("images/video.png");
-	ThemeResource contentAudio = new ThemeResource("images/audio.png");
-	ThemeResource contentNotSet = new ThemeResource("images/notSet.png");
+	private static int noCategory = -1;
 	
 	
 	//GjaUI
 	GjaUI parentUI;
 	
 	//ShowContent
-	ShowContent showContent;
+	public ShowContent showContent;
 	
 	
 	/**
@@ -91,44 +95,54 @@ public class GuiMain  extends VerticalLayout{
 	
 	protected void loadTable(LinkedList<Note> notes) {
 		table.removeAllItems();
+		Object[] object = null;
+		tableSize = 0;
+		
+		//Categories
+		
+		for(int i = 0; i < categoriesGlobal.size(); i++) {
+			object = new Object[]{categoriesGlobal.get(i).getName(), null, null, null, null, null, null};
+			table.addItem(object, i);
+			
+			table.getItem(i).getItemProperty(columnTitle).setReadOnly(true);
+			table.getItem(i).getItemProperty(columnRemindOn).setReadOnly(true);
+			table.getItem(i).getItemProperty(columnExpire).setReadOnly(true);
+			table.setChildrenAllowed(i, true);
+			tableSize++;
+		}
+		//System.out.printf("IDS OF CATEGORY are: %s\n", table.getItemIds().toString());
+		
+		//Actual notes
 		for(int i = 0; i < notes.size(); i++) {
 			//table.addItem(new Object[]{, , });
 			
 			String title = new String(notes.get(i).getTitle());
 			
-			ThemeResource imageResource;
-			Embedded content;
-			switch(notes.get(i).getContent().getType()) {
-			case IMG :
-				imageResource = contentImg;
-				break;
-			case VIDEO :
-				imageResource = contentVideo;
-				break;
-			case AUDIO  :
-				imageResource = contentAudio;
-				break;
-			default :
-				imageResource = contentNotSet;
-				break;
-			}
-			//imageResource = contentPlaceholder;
-			content = new Embedded("Content", imageResource);
-			String description = new String(notes.get(i).getDescription());
+			ContentCell content;
+			content = new ContentCell(notes.get(i).getContent(), edit, parentUI, this, i);
+			
+			//String description = new String(notes.get(i).getDescription());
+			LabelRichCell description = new LabelRichCell(notes.get(i).getDescription(), edit);
+			
 			
 			Date remindOn = notes.get(i).getReminder();
 			Date inputExpire = notes.get(i).getExpire();
 			
-			TextArea comment = new TextArea();
+			ArrayList<Comment> hold = notes.get(i).getComments();
+			CommentCell comment = new CommentCell(hold, edit, i);
 			
 			
 			//MENU BAR PRO TAGY - SLOZITEC!!
 			MenuBar tags = new MenuBar();
+			com.vaadin.ui.MenuBar.MenuItem tagsOpen = tags.addItem("Tags", null);
+			tagsOpen.setDescription(String.valueOf(i));
+			
+			
 			MenuBar.Command checked = new MenuBar.Command() {
 				
 				@Override
 				public void menuSelected(com.vaadin.ui.MenuBar.MenuItem selectedItem) {
-					int index = Integer.valueOf(selectedItem.getParent().getText().substring(selectedItem.getParent().getText().length() - 1));
+					int index = Integer.valueOf(selectedItem.getParent().getDescription());
 					if(selectedItem.isChecked()) {
 						notes.get(index).getTags().set(selectedItem.getId() - 3, true);
 					}
@@ -138,7 +152,6 @@ public class GuiMain  extends VerticalLayout{
 				}
 			};
 			
-			com.vaadin.ui.MenuBar.MenuItem tagsOpen = tags.addItem("Tags " + i, null);
 			for(int j = 0; j < tagsGlobal.size(); j++) {
 				tagsOpen.addItem(tagsGlobal.get(j).getValue(), checked).setCheckable(true);
 				if(notes.get(i).getTags().size() < j + 1) {
@@ -147,7 +160,14 @@ public class GuiMain  extends VerticalLayout{
 				tagsOpen.getChildren().get(j).setChecked(notes.get(i).getTags().get(j));
 			}			
 			
-			table.addItem(new Object[]{title, description, remindOn, inputExpire, comment, tags, content}, i);
+			object = new Object[]{title, description, remindOn, inputExpire, comment, tags, content};
+			
+			table.addItem(object, i + categoriesGlobal.size());
+			if(notes.get(i).getCategories() != noCategory) {
+				table.setParent(i + categoriesGlobal.size(), notes.get(i).getCategories());
+			}
+			table.setChildrenAllowed(i + categoriesGlobal.size(), false);
+			tableSize++;
 		}
 	}
 	
@@ -180,52 +200,29 @@ public class GuiMain  extends VerticalLayout{
 		
 		//Table init
 		table.setWidth("100%");
-		table.setHeight("100%");
+		//table.setHeight("100%");
+		//table.setEditable(true);
 		table.addStyleName("components-inside");
-		table.setSelectable(true);
+		table.setSelectable(false);
 		
 		IndexedContainer ic = new IndexedContainer();
 		
 		table.addContainerProperty(columnTitle,         String.class,   null);		
-		table.addContainerProperty(columnDescription,   String.class,   null);
+		table.addContainerProperty(columnDescription,   LabelRichCell.class,   null);
 		table.addContainerProperty(columnRemindOn,      Date.class,    	null);
 		table.addContainerProperty(columnExpire,    	Date.class,    	null);
-		table.addContainerProperty(columnComment,       TextArea.class, null);
+		table.addContainerProperty(columnComment,       CommentCell.class, null);
 		table.addContainerProperty(columnTag,           MenuBar.class, 	null);
-		table.addContainerProperty(columnContent,       Embedded.class, null);
-		
-		table.addGeneratedColumn(columnDownloadEditContent, new Table.ColumnGenerator() {
-			
-			@SuppressWarnings("deprecation")
-			@Override
-			public Object generateCell(Table source, Object itemId, Object columnId) {
-		        /* When the check box value changes, add/remove the itemId from the selectedItemIds set */
-		        final Button btn = new Button("Show Content");
-		        btn.addClickListener(new Button.ClickListener() {
-					@Override
-					public void buttonClick(ClickEvent event) {
-						if(editable) {
-							//System.out.printf("ITEM ID: %s COLUMN ID: %s\n", itemId, columnId);
-						}
-						else {
-							request.downloadContent(notes.get((int) itemId).getContent());
-							System.out.printf("Now downloading file for note %d\n", (int) itemId);
-							parentUI.addWindow(showContent = new ShowContent(notes.get((int) itemId).getContent()));
-						}
-					}
-		          });
-		          return btn;
-		        }
-		});
+		table.addContainerProperty(columnContent,       ContentCell.class, null);
 		
 		table.addGeneratedColumn(columnRemove, new Table.ColumnGenerator() {
 			
 			@SuppressWarnings("deprecation")
 			@Override
 			public Object generateCell(Table source, Object itemId, Object columnId) {
-				boolean selected = selectedItemIds.contains(itemId);
+				//boolean selected = selectedItemIds.contains(itemId);
 		        /* When the check box value changes, add/remove the itemId from the selectedItemIds set */
-		        final CheckBox cb = new CheckBox("", selected);
+		        final CheckBox cb = new CheckBox("", false);
 		        cb.addListener(new Property.ValueChangeListener() {
 		            @Override
 		            public void valueChange(Property.ValueChangeEvent event) {
@@ -240,7 +237,14 @@ public class GuiMain  extends VerticalLayout{
 		        }
 		});
 		
-		
+		table.setColumnExpandRatio(columnTitle, 4);
+		table.setColumnExpandRatio(columnDescription, 5);
+		table.setColumnExpandRatio(columnRemindOn, 4);
+		table.setColumnExpandRatio(columnExpire, 4);
+		table.setColumnExpandRatio(columnComment, 4);
+		table.setColumnExpandRatio(columnTag, 2);
+		table.setColumnExpandRatio(columnContent, 5);
+		table.setColumnExpandRatio(columnRemove, 2);
 		
 		return table;
 	}
@@ -250,19 +254,26 @@ public class GuiMain  extends VerticalLayout{
 	 * Size of notes will not change during edit
 	 */
 	protected void editedNotes() {
-		for(int i = 0; i < table.size(); i++) {
-			Item item = table.getItem(i);
+		
+		LabelRichCell x;
+		CommentCell commentCellx = null;
+		
+		for(int i = 0; i < tableSize - categoriesGlobal.size(); i++) {
+			Item item = table.getItem(i + categoriesGlobal.size());
 			//Title
 			notes.get(i).setTitle(String.valueOf(item.getItemProperty(columnTitle).getValue()));
 			//Description
-			notes.get(i).setDescription(String.valueOf(item.getItemProperty(columnDescription).getValue()));
+			x = (LabelRichCell) item.getItemProperty(columnDescription).getValue();
+			notes.get(i).setDescription(x.getRichText().getValue());
 			//Date - reminds on
 			notes.get(i).setReminder((Date) item.getItemProperty(columnRemindOn).getValue());
 			//Date - expires on
 			notes.get(i).setExpire((Date) item.getItemProperty(columnExpire).getValue());
 			//Content - TODO
 			//Attachments - TODO
-			//Comments - TODO (??)
+			//Comments
+			commentCellx = (CommentCell) item.getItemProperty(columnComment).getValue();
+			notes.get(i).setComments(commentCellx.getCommentList());
 		}
 		loadTable(notes);
 	}
@@ -272,13 +283,13 @@ public class GuiMain  extends VerticalLayout{
 		parentUI = ui;
 		
 		//this.addComponent(new Label("Hello Bena!"));
-		this.setSizeFull();
+		//this.setSizeFull();
 		
 		//TopMenu init
 		HorizontalLayout topMenu = new HorizontalLayout();
 		this.addComponent(topMenu);
 		topMenu.setWidth("100%");
-		topMenu.setHeight("100%");
+		//topMenu.setHeight("100%");
 		
 		//Init Top Menu (add components)
 		topMenuInit(topMenu);
@@ -287,37 +298,39 @@ public class GuiMain  extends VerticalLayout{
 		
 		VerticalLayout notesSpace = new VerticalLayout();
 		this.addComponent(notesSpace);
-		notesSpace.setSizeFull();
+		//notesSpace.setSizeFull();
 		notesSpace.setWidth("100%");
-		this.setExpandRatio(topMenu, 0.05f);
-		this.setExpandRatio(notesSpace, 0.95f);
+		this.setExpandRatio(topMenu, 0.08f);
+		this.setExpandRatio(notesSpace, 0.92f);
 		
+		//Buttons space
+		HorizontalLayout notesSpaceButtons = new HorizontalLayout();
+		notesSpace.setSpacing(true);
+		notesSpace.addComponent(notesSpaceButtons);
 		
 		//Init Table
+		Panel panelTable = new Panel();
+		notesSpace.addComponent(panelTable);
 		tableInit(table);
-		notesSpace.addComponent(table);
+		panelTable.setContent(table);
 		
-		VerticalLayout notesSpaceButtons = new VerticalLayout();
-		notesSpace.addComponent(notesSpaceButtons);
 		notesSpaceButtons.addComponent(new Button("Delete", new Button.ClickListener() {
-		      /**
-			 * 
-			 */
-			private static final long serialVersionUID = 1L;
 
 			@Override
 		      public void buttonClick(Button.ClickEvent event) {
+				ArrayList<Integer> index = new ArrayList();
 		        for (Object itemId : selectedItemIds) {
-		          notes.remove((int)itemId);
+		          index.add((int)(itemId) - categoriesGlobal.size());
 		          }
+		        int j = 0;
+		        for(int i = 0; i < index.size(); i++) {
+		        	notes.remove(index.get(i) + j);
+		        	j--;
+		        }
 		        loadTable(notes);
 		      }
 		    }));
-		notesSpaceButtons.addComponent(new Button("Edit", new Button.ClickListener() {
-		      /**
-			 * 
-			 */
-			private static final long serialVersionUID = 1L;
+		notesSpaceButtons.addComponent(edit = new Button("Edit", new Button.ClickListener() {
 
 			@Override
 		      public void buttonClick(Button.ClickEvent event) {
@@ -340,13 +353,18 @@ public class GuiMain  extends VerticalLayout{
 			tagsGlobal.add(tag);
 		}
 		
+		for(int i = 0; i < 5; i++) {
+			categoriesGlobal.add(new Category("Kategorie c. " + i, "Vychozi kategorie"));
+		}
+		
 		//Initial notes
-		String[] title = {"Nakup", "Prodej", "Vydej"};
-		Content[] content = {new Content(ContentType.IMG, "images/logo.png"), new Content(ContentType.AUDIO, "audio/record.mp3"), new Content(ContentType.VIDEO, "video/video.mp4")};
-		String[] description = {"Mleko 4 rohliky", "Vrtacka Bena", "4 lahve praveho Hamsika a jedna Zelena"};
-		Date[] inputReminder = {new Date(), new Date(), new Date()};
-		Date[] inputExpire = {new Date(), new Date(), new Date()};
-		state[] state = {null, null, null};
+		String[] title = {"Nakup", "Prodej", "Vydej", "Binej"};
+		Content[] content = {new Content(ContentType.IMG, "images/logo.png"), new Content(ContentType.AUDIO, "audio/record.mp3"), 
+				new Content(ContentType.VIDEO, "video/video.mp4"), new Content(ContentType.NONE, null)};
+		String[] description = {"Mleko 4 rohliky", "Vrtacka Bena", "4 lahve praveho Hamsika a jedna Zelena, hodne skorice a hlavne, hlavne, tresnovice", "Navstivit Hryzacke Kresice"};
+		Date[] inputReminder = {new Date(), new Date(), new Date(), new Date()};
+		Date[] inputExpire = {new Date(), new Date(), new Date(), new Date()};
+		state[] state = {null, null, null, null};
 		ArrayList<Boolean> setTags = new  ArrayList<Boolean>();
 		for(int i = 0; i != tagsGlobal.size(); i++) {
 			Boolean tag;
@@ -354,18 +372,21 @@ public class GuiMain  extends VerticalLayout{
 			else tag = false;
 			setTags.add(tag);
 		}
-		ArrayList<Category> categories = new ArrayList<Category>();
+		int[] categories = {0,1,2,3,4};
 		ArrayList<Comment> comments = new ArrayList<Comment>();
+		for(int i = 0; i < 4; i++) {
+			comments.add(new Comment(this.currentUser, i + ": Chci komentovat tuto vec, ale jak...?"));
+		}
 		ArrayList<Content> attachments = new ArrayList<Content>();
 		
 		for(int i = 0; i < title.length; i++) {
-			notes.add(new Note(title[i], content[i], description[i], currentUser, inputReminder[i], inputExpire[i], state[i], setTags, categories, comments, attachments));
+			notes.add(new Note(title[i], content[i], description[i], currentUser, inputReminder[i], inputExpire[i], state[i], setTags, categories[i], comments, attachments));
 		}
 		
 		//Load initial notes to table
 		loadTable(notes);
 		
-		notesSpace.setExpandRatio(table, 0.8f);
+		notesSpace.setExpandRatio(panelTable, 0.8f);
 		notesSpace.setExpandRatio(notesSpaceButtons, 0.2f);
 	}
 }

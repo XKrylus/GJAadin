@@ -75,8 +75,7 @@ public class GjaUI extends UI {
 						state[] state = {null, null};
 						ArrayList<Boolean> tags = new  ArrayList<Boolean>();
 						boolean tagSet = false;
-						Content[] content = {new Content(ContentType.IMG, "images/logo.png"), new Content(ContentType.AUDIO, "audio/record.wav"), 
-								new Content(ContentType.VIDEO, "video/logo.png")};
+						Content[] content = {new Content(ContentType.NONE, null)};
 						String currentString = addNote.tagsListBuilder.getValue().toString();
 						currentString = currentString.replaceAll("\\[\\(\\)\\]", "");
 						currentString = currentString.replaceAll("\\[", "");
@@ -94,7 +93,7 @@ public class GjaUI extends UI {
 							}
 							tagSet = false;
 						}
-						ArrayList<Category> categories = new ArrayList<Category>();
+						int categories = -1;
 						ArrayList<Comment> comments = new ArrayList<Comment>();
 						ArrayList<Content> attachments = new ArrayList<Content>();
 						
