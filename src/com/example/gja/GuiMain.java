@@ -45,10 +45,12 @@ public class GuiMain  extends VerticalLayout{
 	Label topName = new Label(currentUser);
 	Label gap = new Label();
 	Button addNote = new Button();
+	Button logout = new Button();
 	Button edit = new Button();
 	MenuBar topMenuBar = new MenuBar();
 	com.vaadin.ui.MenuBar.MenuItem topMenuBarOptions;
 	MenuItem editTags;
+	MenuItem editCategories;
 	
 	//List with Notes
 	public LinkedList<Note> notes = new LinkedList<Note>();
@@ -180,6 +182,9 @@ public class GuiMain  extends VerticalLayout{
 		addNote.setCaption("+");
 		topMenu.addComponent(addNote);
 		topMenu.setComponentAlignment(addNote, Alignment.MIDDLE_RIGHT);
+		logout.setCaption("Logout");
+		topMenu.addComponent(logout);
+		topMenu.setComponentAlignment(logout, Alignment.MIDDLE_RIGHT);
 		
 		
 		topMenu.addComponent(topMenuBar);
@@ -188,7 +193,7 @@ public class GuiMain  extends VerticalLayout{
 		topMenuBarOptions.addItem("Search", null, null);
 		topMenuBarOptions.addItem("Sync", null, null);
 		editTags = topMenuBarOptions.addItem("Edit Tags", null,null);
-		topMenuBarOptions.addItem("Confirm", null, null);
+		editCategories = topMenuBarOptions.addItem("Edit Categories", null, null);
 		
 		return topMenu;
 	}
@@ -276,6 +281,8 @@ public class GuiMain  extends VerticalLayout{
 			notes.get(i).setComments(commentCellx.getCommentList());
 		}
 		loadTable(notes);
+		// SERVER - Notes edited in various ways - update on server
+        request.updateNotes(notes);
 	}
 
 	public GuiMain(GjaUI ui) {
@@ -328,6 +335,8 @@ public class GuiMain  extends VerticalLayout{
 		        	j--;
 		        }
 		        loadTable(notes);
+		        // SERVER - Notes removed - update on server
+		        request.updateNotes(notes);
 		      }
 		    }));
 		notesSpaceButtons.addComponent(edit = new Button("Edit", new Button.ClickListener() {

@@ -8,6 +8,7 @@ import java.util.LinkedList;
 import javax.servlet.annotation.WebServlet;
 
 import com.example.gja.logic.LoginProcess;
+import com.example.gja.logic.ProcessRequest;
 import com.example.gja.objects.Category;
 import com.example.gja.objects.Comment;
 import com.example.gja.objects.Content;
@@ -36,6 +37,7 @@ public class GjaUI extends UI {
 	
 	protected Gui login = new Gui();
 	protected GuiMain guiMain = new GuiMain(this);
+	protected ProcessRequest request = new ProcessRequest();
 	protected LoginProcess loginProcess = new LoginProcess();
 	
 	protected void processLogin() {
@@ -49,19 +51,46 @@ public class GjaUI extends UI {
 					guiMain.topName.setValue(guiMain.currentUser);
 				}
 				else {
-					login.textFieldLogin.setValue("Login failed");
+					login.labelInfo.setValue("Login Failed");
+					login.textFieldPassword.setValue("");
+				}
+			}
+		});
+		
+		login.buttonRegister.addClickListener(new Button.ClickListener() {
+			
+			@Override
+			public void buttonClick(ClickEvent event) {
+				if(loginProcess.confirmRegister(login.textFieldLogin.getValue(), login.textFieldPassword.getValue())) {
+					login.labelInfo.setValue("User Registered");
 					login.textFieldLogin.setValue("");
+					login.textFieldPassword.setValue("");
+				}
+				else {
+					login.labelInfo.setValue("User Already Exists");
+					login.textFieldLogin.setValue("");
+					login.textFieldPassword.setValue("");
 				}
 			}
 		});
 	}
 	
 	protected void clickListeners() {
+		
+		guiMain.logout.addClickListener(new Button.ClickListener() {
+			
+			@Override
+			public void buttonClick(ClickEvent event) {
+				loginProcess.confirmLogout(guiMain.currentUser);
+				guiMain.currentUser = null;
+				login.labelInfo.setValue(null);
+				login.textFieldLogin.setValue("");
+				login.textFieldPassword.setValue("");
+				setContent(login);
+			}
+		});
+		
 		guiMain.addNote.addClickListener(new Button.ClickListener() {
-			/**
-			 * ??!
-			 */
-			private static final long serialVersionUID = 1L;
 
 			@Override
 			public void buttonClick(ClickEvent event) {
@@ -115,7 +144,10 @@ public class GjaUI extends UI {
 					
 					@Override
 					public void buttonClick(ClickEvent event) {
-						guiMain.tagsGlobal.add(new Tag(editTags.nameOfTag.getValue()));
+						Tag tag = new Tag(editTags.nameOfTag.getValue());
+						guiMain.tagsGlobal.add(tag);
+						// SERVER - Tag added - update on server
+				        request.addTag(tag);
 						editTags.loadTags(guiMain.tagsGlobal);
 						guiMain.loadTable(guiMain.notes);
 					}
@@ -139,6 +171,8 @@ public class GjaUI extends UI {
 					            if(editTags.tags.isSelected(iid))
 					            {
 					            	guiMain.tagsGlobal.remove(j);
+					            	// SERVER - Tag removed - update on server
+							        request.removeTag(guiMain.tagsGlobal.get(j));
 					            }
 					            j++;
 					        }
@@ -150,6 +184,49 @@ public class GjaUI extends UI {
 		};
 		
 		guiMain.editTags.setCommand(editTags);
+		
+		MenuBar.Command editCategories = new MenuBar.Command() {
+			
+			@Override
+			public void menuSelected(MenuItem selectedItem) {
+				GuiEditCategories editCategories = new GuiEditCategories(guiMain.categoriesGlobal);
+				addWindow(editCategories);
+				editCategories.addCategory.addClickListener(new Button.ClickListener() {
+					
+					@Override
+					public void buttonClick(ClickEvent event) {
+						Category category = new Category(editCategories.nameOfCategory.getValue(), "");
+						guiMain.categoriesGlobal.add(category);
+						// SERVER - Tag removed - update on server
+				        request.addCategory(category);
+						editCategories.loadCategories(guiMain.categoriesGlobal);
+						guiMain.loadTable(guiMain.notes);
+					}
+				});
+				editCategories.removeCategory.addClickListener(new Button.ClickListener() {
+					
+					@Override
+					public void buttonClick(ClickEvent event) {
+						int j = 0;
+						 for (Iterator i = editCategories.categories.getItemIds().iterator(); i.hasNext();)  {
+
+					            Object iid = (Object) i.next();
+					            if(editCategories.categories.isSelected(iid))
+					            {
+					            	guiMain.categoriesGlobal.remove(j);
+					            	// SERVER - Category removed - update on server
+							        request.removeCategory(guiMain.categoriesGlobal.get(j));
+					            }
+					            j++;
+					        }
+						 editCategories.loadCategories(guiMain.categoriesGlobal);
+						 guiMain.loadTable(guiMain.notes);
+					}
+				});
+			}
+		};
+		
+		guiMain.editCategories.setCommand(editCategories);
 		
 		
 	}

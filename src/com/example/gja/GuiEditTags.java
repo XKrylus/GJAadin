@@ -55,7 +55,6 @@ public class GuiEditTags extends Window {
 	    buttons.addComponent(addTag);
 	    buttons.addComponent(nameOfTag);
 	    
-	    subContent.addComponent(editTag);
 	    subContent.addComponent(removeTag);
 	    subContent.addComponent(close);
 	    close.addClickListener(new Button.ClickListener() {
