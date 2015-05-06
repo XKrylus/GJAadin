@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import com.example.gja.objects.Comment;
 import com.example.gja.objects.Content;
+import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Button.ClickListener;
@@ -60,6 +61,7 @@ public class CommentCell extends VerticalLayout implements ClickListener {
         commentOpen = commentSpace.addItem("Comments", null);
         loadCommentTable();
         addComponent(commentSpace);
+        setComponentAlignment(commentSpace, Alignment.BOTTOM_CENTER);
         
         newComment = new TextArea("Comment text");
         newComment.setHeight("50");
@@ -68,14 +70,13 @@ public class CommentCell extends VerticalLayout implements ClickListener {
         addComponent(newComment);
         
         HorizontalLayout buttons = new HorizontalLayout();
+        buttons.setVisible(false);
         addComponent(buttons);
         b = new Button("Add");
         b.addListener(this);
-        b.setVisible(false);
         buttons.addComponent(b);
         c = new Button("Remove");
         c.addListener(this);
-        c.setVisible(false);
         buttons.addComponent(c);
         
         
@@ -83,8 +84,7 @@ public class CommentCell extends VerticalLayout implements ClickListener {
 			
 			@Override
 			public void buttonClick(ClickEvent event) {
-				b.setVisible(!b.isVisible());
-				c.setVisible(!c.isVisible());
+				buttons.setVisible(!buttons.isVisible());
 				newComment.setVisible(!newComment.isVisible());
 				enableChecking(newComment.isVisible());
 			}

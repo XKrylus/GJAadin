@@ -19,6 +19,7 @@ import com.example.gja.objects.Content.ContentType;
 import com.example.gja.objects.Note.state;
 import com.vaadin.annotations.Theme;
 import com.vaadin.annotations.VaadinServletConfiguration;
+import com.vaadin.server.Page;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinServlet;
 import com.vaadin.ui.Button;
@@ -37,17 +38,20 @@ public class GjaUI extends UI {
 	}
 	
 	protected Gui login = new Gui();
-	protected GuiMain guiMain = new GuiMain(this);
+	protected GuiMain guiMain;
 	protected ProcessRequest request = new ProcessRequest();
 	protected LoginProcess loginProcess = new LoginProcess();
 	protected ServletContext servletContext;
 	
 	protected void processLogin() {
+		//login.buttonLogin.setStyleName("toplink");
 		login.buttonLogin.addClickListener(new Button.ClickListener() {
 			
 			@Override
 			public void buttonClick(ClickEvent event) {
 				if(loginProcess.confirmUser(login.textFieldLogin.getValue(), login.textFieldPassword.getValue())) {
+					guiMain = new GuiMain(GjaUI.this);
+					clickListeners();
 					setContent(guiMain);
 					guiMain.currentUser = login.textFieldLogin.getValue();
 					guiMain.topName.setValue(guiMain.currentUser);
@@ -124,12 +128,12 @@ public class GjaUI extends UI {
 							}
 							tagSet = false;
 						}
-						int categories = -1;
+						Category category = null;
 						ArrayList<Comment> comments = new ArrayList<Comment>();
 						ArrayList<Content> attachments = new ArrayList<Content>();
 						
 						guiMain.notes.addLast(new Note(addNote.title.getValue(), content[0], addNote.description.getValue(), guiMain.currentUser,
-								addNote.remindsOn.getValue(), addNote.expiresOn.getValue(), state[0], tags, categories, comments, attachments));
+								addNote.remindsOn.getValue(), addNote.expiresOn.getValue(), state[0], tags, category, comments, attachments));
 						guiMain.loadTable(guiMain.notes);
 						addNote.close();
 					}
@@ -285,7 +289,6 @@ public class GjaUI extends UI {
 	protected void init(VaadinRequest request) {
 		
 		setContent(login);
-		clickListeners();
 		processLogin();
 		
 		servletContext = VaadinServlet.getCurrent().getServletContext();

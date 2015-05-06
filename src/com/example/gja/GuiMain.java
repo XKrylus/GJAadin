@@ -7,6 +7,7 @@ import java.util.LinkedList;
 import java.util.Set;
 
 
+
 import com.example.gja.guiObjects.CommentCell;
 import com.example.gja.guiObjects.ContentCell;
 import com.example.gja.guiObjects.LabelRichCell;
@@ -33,7 +34,7 @@ public class GuiMain  extends VerticalLayout{
 	public ProcessRequest request = new ProcessRequest();
 	
 	//TopMenu Components
-	Label topFlag = new Label("Flag");
+	Label topFlag = new Label("GJAadin Note Manager");
 	Label topName = new Label(currentUser);
 	Label gap = new Label();
 	Button addNote = new Button();
@@ -68,10 +69,9 @@ public class GuiMain  extends VerticalLayout{
 	private static String columnComment = "Comment";
 	private static String columnTag = "Tag";
 	private static String columnContent = "Content";
-	private static String columnDownloadEditContent = "Show Content";
 	private static String columnRemove = "Remove";
 	
-	private static int noCategory = -1;
+	private static String noCategory = null;
 	
 	
 	//GjaUI
@@ -87,6 +87,17 @@ public class GuiMain  extends VerticalLayout{
 	private static final long serialVersionUID = 1L;
 	
 	
+	public int getBrowserWidth() {
+		return parentUI.getPage().getBrowserWindowWidth();
+	}
+	
+	private int getCategoryId(Category category) {
+		for(int i = 0; i < categoriesGlobal.size(); i++) {
+			if(category.getName().equals(categoriesGlobal.get(i).getName())) 
+				return i;
+		}
+		return 0;
+	}
 	
 	protected void loadTable(LinkedList<Note> notes) {
 		table.removeAllItems();
@@ -96,7 +107,7 @@ public class GuiMain  extends VerticalLayout{
 		//Categories
 		
 		for(int i = 0; i < categoriesGlobal.size(); i++) {
-			object = new Object[]{categoriesGlobal.get(i).getName(), null, null, null, null, null, null};
+			object = new Object[]{categoriesGlobal.get(i).getName(), null/*, null*/, null, null, null, null};
 			table.addItem(object, i);
 			
 			table.getItem(i).getItemProperty(columnTitle).setReadOnly(true);
@@ -157,11 +168,11 @@ public class GuiMain  extends VerticalLayout{
 				tagsOpen.getChildren().get(j).setChecked(notes.get(i).getTags().get(j));
 			}			
 			
-			object = new Object[]{title, description, remindOn, inputExpire, comment, tags, content};
+			object = new Object[]{title, description, remindOn/*, inputExpire*/, comment, tags, content};
 			
 			table.addItem(object, i + categoriesGlobal.size());
-			if(notes.get(i).getCategories() != noCategory) {
-				table.setParent(i + categoriesGlobal.size(), notes.get(i).getCategories());
+			if(notes.get(i).getCategories().getName() != noCategory) {
+				table.setParent(i + categoriesGlobal.size(), getCategoryId(notes.get(i).getCategories()));
 			}
 			table.setChildrenAllowed(i + categoriesGlobal.size(), false);
 			tableSize++;
@@ -171,7 +182,9 @@ public class GuiMain  extends VerticalLayout{
 	protected HorizontalLayout topMenuInit(HorizontalLayout topMenu) {
 		//Top Menu Components init
 		topMenu.addComponent(topFlag);
+		topMenu.setComponentAlignment(topFlag, Alignment.MIDDLE_LEFT);
 		topMenu.addComponent(topName);
+		topMenu.setComponentAlignment(topName, Alignment.MIDDLE_LEFT);
 		gap.setWidth("100%");
 		topMenu.addComponent(gap);
 		addNote.setCaption("+");
@@ -199,10 +212,10 @@ public class GuiMain  extends VerticalLayout{
 	protected Table tableInit(Table table) {
 		
 		//Table init
-		table.setWidth("100%");
+		//table.setWidth("100%");
 		//table.setHeight("100%");
 		//table.setEditable(true);
-		table.addStyleName("components-inside");
+		//table.addStyleName("components-inside");
 		table.setSelectable(false);
 		
 		IndexedContainer ic = new IndexedContainer();
@@ -210,7 +223,7 @@ public class GuiMain  extends VerticalLayout{
 		table.addContainerProperty(columnTitle,         String.class,   null);		
 		table.addContainerProperty(columnDescription,   LabelRichCell.class,   null);
 		table.addContainerProperty(columnRemindOn,      Date.class,    	null);
-		table.addContainerProperty(columnExpire,    	Date.class,    	null);
+		//table.addContainerProperty(columnExpire,    	Date.class,    	null);
 		table.addContainerProperty(columnComment,       CommentCell.class, null);
 		table.addContainerProperty(columnTag,           MenuBar.class, 	null);
 		table.addContainerProperty(columnContent,       ContentCell.class, null);
@@ -237,14 +250,24 @@ public class GuiMain  extends VerticalLayout{
 		        }
 		});
 		
-		table.setColumnExpandRatio(columnTitle, 4);
+		table.setColumnWidth(columnTitle, 180);
+		table.setColumnWidth(columnDescription, (getBrowserWidth() - 995));
+		table.setColumnWidth(columnRemindOn, 150);
+		table.setColumnWidth(columnComment, 135);
+		table.setColumnWidth(columnTag, 70);
+		table.setColumnWidth(columnContent, 250);
+		table.setColumnWidth(columnRemove, 55);
+		
+		
+		/*
+		table.setColumnExpandRatio(columnTitle, 5);
 		table.setColumnExpandRatio(columnDescription, 5);
 		table.setColumnExpandRatio(columnRemindOn, 4);
-		table.setColumnExpandRatio(columnExpire, 4);
+		//table.setColumnExpandRatio(columnExpire, 4);
 		table.setColumnExpandRatio(columnComment, 4);
 		table.setColumnExpandRatio(columnTag, 2);
 		table.setColumnExpandRatio(columnContent, 5);
-		table.setColumnExpandRatio(columnRemove, 2);
+		table.setColumnExpandRatio(columnRemove, 2);*/
 		
 		return table;
 	}
@@ -273,7 +296,7 @@ public class GuiMain  extends VerticalLayout{
 			//Date - reminds on
 			notes.get(i).setReminder((Date) item.getItemProperty(columnRemindOn).getValue());
 			//Date - expires on
-			notes.get(i).setExpire((Date) item.getItemProperty(columnExpire).getValue());
+			//notes.get(i).setExpire((Date) item.getItemProperty(columnExpire).getValue());
 			//Content
 			contentCell = (ContentCell) item.getItemProperty(columnContent).getValue();
 			notes.get(i).getContent().setType(contentCell.content_local.getType());
@@ -282,10 +305,10 @@ public class GuiMain  extends VerticalLayout{
 			//Comments
 			commentCellx = (CommentCell) item.getItemProperty(columnComment).getValue();
 			notes.get(i).setComments(commentCellx.getCommentList());
+			request.editNote(currentUser, i, notes.get(i));
 		}
 		loadTable(notes);
 		// SERVER - Notes edited in various ways - update on server
-        request.updateNotes(currentUser, notes);
 	}
 
 	public GuiMain(GjaUI ui) {
@@ -303,6 +326,7 @@ public class GuiMain  extends VerticalLayout{
 		
 		//Init Top Menu (add components)
 		topMenuInit(topMenu);
+		topMenu.setStyleName("center_area");
 		
 		//Notes
 		
@@ -323,6 +347,7 @@ public class GuiMain  extends VerticalLayout{
 		notesSpace.addComponent(panelTable);
 		tableInit(table);
 		panelTable.setContent(table);
+		panelTable.getContent().setWidthUndefined();
 		
 		notesSpaceButtons.addComponent(new Button("Delete", new Button.ClickListener() {
 
@@ -332,15 +357,15 @@ public class GuiMain  extends VerticalLayout{
 		        for (Object itemId : selectedItemIds) {
 		          index.add((int)(itemId) - categoriesGlobal.size());
 		          }
-		        System.out.printf("INDEX TO REMOVE: %s\n", index);
+		        //System.out.printf("INDEX TO REMOVE: %s\n", index);
 		        int j = 0;
 		        for(int i = 0; i < index.size(); i++) {
 		        	notes.remove(index.get(i) + j);
+		        	// SERVER - Notes removed - update on server
+			        request.removeNote(currentUser, index.get(i));
 		        	j--;
 		        }
 		        loadTable(notes);
-		        // SERVER - Notes removed - update on server
-		        request.updateNotes(currentUser, notes);
 		      }
 		    }));
 		notesSpaceButtons.addComponent(edit = new Button("Edit", new Button.ClickListener() {
@@ -360,12 +385,28 @@ public class GuiMain  extends VerticalLayout{
 		      }
 		    }));
 		
+		//Initial tags
+		tagsGlobal.add(new Tag("Dùležité"));
+		tagsGlobal.add(new Tag("Poèká"));
+		tagsGlobal.add(new Tag("Co nejdøív"));
+		
+		//Initial categories
+		categoriesGlobal.add(new Category("Škola", "Vychozi kategorie"));
+		categoriesGlobal.add(new Category("Práce", "Vychozi kategorie"));
+		categoriesGlobal.add(new Category("Domácnost", "Vychozi kategorie"));
+		categoriesGlobal.add(new Category("Rodina", "Vychozi kategorie"));
+		categoriesGlobal.add(new Category("Zábava", "Vychozi kategorie"));
+		
+		//INITIAL TAGS AND CATEGORIES WILL BE REMOVED TOO - SET FROM SERVER
+		//categoriesGlobal = request.getCategories(currentUser);
+		//tagsGlobal = request.getTags(currentUser);
+		
 		
 		//Initial notes
-		String[] title = {"Nakup", "Prodej", "Vydej", "Binej"};
+		String[] title = {"GJA Projekt", "Odevzdat posudek", "Ventilace", "Navštívit babièku"};
 		Content[] content = {new Content(ContentType.NONE, null), new Content(ContentType.NONE, null), 
 				new Content(ContentType.NONE, null), new Content(ContentType.NONE, null)};
-		String[] description = {"Mleko 4 rohliky", "Vrtacka Bena", "4 lahve praveho Hamsika a jedna Zelena, hodne skorice a hlavne, hlavne, tresnovice", "Navstivit Hryzacke Kresice"};
+		String[] description = {"Dodìlat projekt do pøedmìtu GJA", "Dokonèit posudek o x.", "Opravit ventilaci v koupelnì", "Zajet do Svitav"};
 		Date[] inputReminder = {new Date(), new Date(), new Date(), new Date()};
 		Date[] inputExpire = {new Date(), new Date(), new Date(), new Date()};
 		state[] state = {null, null, null, null};
@@ -376,10 +417,10 @@ public class GuiMain  extends VerticalLayout{
 			else tag = false;
 			setTags.add(tag);
 		}
-		int[] categories = {0,1,2,3,4};
+		Category[] categories = {categoriesGlobal.get(0),categoriesGlobal.get(1),categoriesGlobal.get(2),categoriesGlobal.get(3),categoriesGlobal.get(4)};
 		ArrayList<Comment> comments = new ArrayList<Comment>();
-		for(int i = 0; i < 4; i++) {
-			comments.add(new Comment(this.currentUser, i + ": Chci komentovat tuto vec, ale jak...?"));
+		for(int i = 0; i < 2; i++) {
+			comments.add(new Comment(this.currentUser, i + ": Tady je komentáø..."));
 		}
 		ArrayList<Content> attachments = new ArrayList<Content>();
 		
@@ -391,21 +432,6 @@ public class GuiMain  extends VerticalLayout{
 		
 		//INITIAL NOTES WILL BE REMOVED, SET notes TO USER NOTES FROM SERVER
 		//notes = request.notesDownloadAll(currentUser);
-		
-		//Initial tags
-		for(int i = 0; i != 5; i++) {
-			Tag tag = new Tag ("Bena c." + String.valueOf(i));
-			tagsGlobal.add(tag);
-		}
-		
-		//Initial categories
-		for(int i = 0; i < 5; i++) {
-			categoriesGlobal.add(new Category("Kategorie c. " + i, "Vychozi kategorie"));
-		}
-		
-		//INITIAL TAGS AND CATEGORIES WILL BE REMOVED TOO - SET FROM SERVER
-		//categoriesGlobal = request.getCategories(currentUser);
-		//tagsGlobal = request.getTags(currentUser);
 		
 		//Load initial notes to table
 		loadTable(notes);

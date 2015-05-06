@@ -41,13 +41,21 @@ public class GuiEditCategories extends Window {
 	    subContent.setComponentAlignment(categories, com.vaadin.ui.Alignment.MIDDLE_CENTER);
 	    
 	    HorizontalLayout buttons = new HorizontalLayout();
+	    buttons.setMargin(true);
+	    buttons.setSpacing(true);
 	    subContent.addComponent(buttons);
 	    
 	    buttons.addComponent(addCategory);
 	    buttons.addComponent(nameOfCategory);
 	    
-	    buttons.addComponent(removeCategory);
-	    subContent.addComponent(close);
+	    HorizontalLayout buttonsx = new HorizontalLayout();
+	    buttonsx.setMargin(true);
+	    buttonsx.setSpacing(true);
+	    subContent.addComponent(buttonsx);
+	    
+	    buttonsx.addComponent(removeCategory);
+	    buttonsx.addComponent(close);
+	    
 	    close.addClickListener(new Button.ClickListener() {
 			
 			@Override

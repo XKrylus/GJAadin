@@ -12,6 +12,7 @@ import com.example.gja.objects.Tag;
 import com.vaadin.data.Container;
 import com.vaadin.data.util.IndexedContainer;
 import com.vaadin.shared.ui.datefield.Resolution;
+import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.DateField;
 import com.vaadin.ui.HorizontalLayout;
@@ -87,9 +88,13 @@ public class GuiAddNote extends Window {
 	    subContent.addComponent(tagsListBuilder);
 	    
 	    HorizontalLayout buttonLayout = new HorizontalLayout();
+	    buttonLayout.setSpacing(true);
+	    buttonLayout.setMargin(true);
 	    subContent.addComponent(buttonLayout);
 	    buttonLayout.addComponent(addNote);
+	    buttonLayout.setComponentAlignment(addNote, Alignment.MIDDLE_LEFT);
 	    buttonLayout.addComponent(cancel);
+	    buttonLayout.setComponentAlignment(cancel, Alignment.MIDDLE_RIGHT);
 	    
 	    
 	    cancel.addClickListener(new Button.ClickListener() {

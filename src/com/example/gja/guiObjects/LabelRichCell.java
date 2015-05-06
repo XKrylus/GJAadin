@@ -22,7 +22,7 @@ public class LabelRichCell extends VerticalLayout implements ClickListener {
 
 
     private Label richText;
-    private static int noCategoty = -1;
+    private static String noCategoty = null;
     Button b;
     Button c;
 
@@ -36,21 +36,17 @@ public class LabelRichCell extends VerticalLayout implements ClickListener {
     	}
     }
 
-    private int loadCategory() {
-    	if(selectCategory.getValue() == null) return -1;
-    	int j = 0;
+    private String loadCategory(Category category) {
     	for (java.util.Iterator<String> i = container.getItemIds().iterator(); i.hasNext();) {
-    	    // Get the current item identifier, which is an integer.
     	    String iid = i.next();
-    	    if (iid == selectCategory.getValue().toString()) {
-    	    	return j;
+    	    if (iid == category.getName()) {
+    	    	return iid;
     	    }
-    	    j++;
     	}
-    	return 0;
+    	return null;
     }
     
-    public LabelRichCell(String text, int category, ArrayList<Category> categoriesGlobal, Button edit) {
+    public LabelRichCell(String text, Category category, ArrayList<Category> categoriesGlobal, Button edit) {
         setSpacing(true);
         editor = new RichTextArea(text);
 
@@ -62,8 +58,8 @@ public class LabelRichCell extends VerticalLayout implements ClickListener {
         loadContainer(categoriesGlobal);
         selectCategory.setContainerDataSource(container);
         
-        if(!(category == noCategoty)) {
-        	selectCategory.setValue(selectCategory.getItemIds().toArray()[category]);
+        if(!(category.getName() == noCategoty)) {
+        	selectCategory.setValue(loadCategory(category));
         }
         
         b = new Button("Edit text");
@@ -109,8 +105,8 @@ public class LabelRichCell extends VerticalLayout implements ClickListener {
     	}
     }
     
-    public int getCategory() {
-    	return loadCategory();
+    public Category getCategory() {
+    	return new Category((String) selectCategory.getValue(), null);
     }
    
     

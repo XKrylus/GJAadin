@@ -2,11 +2,11 @@ package com.example.gja;
 
 import java.util.ArrayList;
 
-import javax.swing.GroupLayout.Alignment;
-
 import com.example.gja.objects.Tag;
+import com.vaadin.ui.Alignment;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.HorizontalLayout;
+import com.vaadin.ui.Label;
 import com.vaadin.ui.ListSelect;
 import com.vaadin.ui.TextField;
 import com.vaadin.ui.VerticalLayout;
@@ -50,13 +50,21 @@ public class GuiEditTags extends Window {
 	    subContent.setComponentAlignment(tags, com.vaadin.ui.Alignment.MIDDLE_CENTER);
 	    
 	    HorizontalLayout buttons = new HorizontalLayout();
+	    buttons.setMargin(true);
+	    buttons.setSpacing(true);
 	    subContent.addComponent(buttons);
 	    
 	    buttons.addComponent(addTag);
 	    buttons.addComponent(nameOfTag);
 	    
-	    subContent.addComponent(removeTag);
-	    subContent.addComponent(close);
+	    HorizontalLayout buttonsx = new HorizontalLayout();
+	    buttonsx.setMargin(true);
+	    buttonsx.setSpacing(true);
+	    buttonsx.setSizeUndefined();
+	    subContent.addComponent(buttonsx);
+	    
+	    buttonsx.addComponent(removeTag);
+	    buttonsx.addComponent(close);
 	    close.addClickListener(new Button.ClickListener() {
 			
 			@Override

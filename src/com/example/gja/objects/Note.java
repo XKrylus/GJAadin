@@ -20,8 +20,8 @@ public class Note {
 	private Date created;	//Date of note creation
 	private Date expire;	//Date of note creation
 	private state state;//state of note (standard, warning, confirmed(but not disposed of))
-	private ArrayList<Boolean> tags;	
-	private int categories;
+	private ArrayList<Boolean> tags;
+	private Category category;
 	private ArrayList<Comment> comments;
 
 	/**
@@ -32,7 +32,7 @@ public class Note {
 	 * @param inputTag			selected tags for note
 	 */
 	public Note(String title, Content content, String desc, String user, Date inputReminder, Date inputExpire, /*PRYC*/state state, ArrayList<Boolean> tags,
-				int categories, ArrayList<Comment> comments, ArrayList<Content> attachments) {
+				Category category, ArrayList<Comment> comments, ArrayList<Content> attachments) {
 		this.title = title;
 		this.content = content;
 		this.reminder = inputReminder;
@@ -48,7 +48,7 @@ public class Note {
 		}*/
 		this.tags = tags;
 		
-		this.categories = categories;
+		this.category = category;
 		
 		if(!comments.equals(null)) {
 			this.comments = comments;
@@ -170,12 +170,12 @@ public class Note {
 		}
 	}
 	
-	public int getCategories(){
-		return this.categories;
+	public Category getCategories(){
+		return this.category;
 	}
 	
-	public void setCategory(int category) {
-		this.categories = category;
+	public void setCategory(Category category) {
+		this.category = category;
 	}
 	
 	public ArrayList<Comment> getComments(){

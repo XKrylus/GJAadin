@@ -179,6 +179,7 @@ public class ContentCell extends VerticalLayout implements ClickListener {
 			@Override
 			public void buttonClick(ClickEvent event) {
 				upload.setVisible(!upload.isVisible());
+				contentEmbedded.setVisible(!contentEmbedded.isVisible());
 				selectType.setVisible(!selectType.isVisible());
 				
 			}

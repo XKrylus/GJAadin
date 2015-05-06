@@ -10,7 +10,7 @@ import com.example.gja.objects.Tag;
 
 public class ProcessRequest {
 	
-	private static String SAMPLE_USER = "bena";
+	private static String SAMPLE_USER = "Honza";
 	private static String SAMPLE_PASSWORD = "bewna";
 	
 	public ProcessRequest() {
@@ -41,12 +41,12 @@ public class ProcessRequest {
 	}
 	
 	//Download notes with fulltext
-		public LinkedList<Note> notesDownloadFulltext(String user, String fulltext) {
-			return null;
-		}
+	public LinkedList<Note> notesDownloadFulltext(String user, String fulltext) {
+		return null;
+	}
 	
 	//Download notes from category
-	public LinkedList<Note> notesDownloadCategory(String user, int CategoryId) {
+	public LinkedList<Note> notesDownloadCategory(String user, Category category) {
 		return null;
 	}
 	
@@ -57,11 +57,6 @@ public class ProcessRequest {
 	
 	//Download note by ID - ??!! (TO JE NA CO?)
 	//TODO!
-	
-	//Update all notes with local LinkedList, includes uploading new Notes (MOZNA (SNAD) NEBUDE POTREBA)
-	public void updateNotes(String user, LinkedList<Note> notes) {
-		
-	}
 	
 	//Upload single Note
 	public void uploadNote(String user, Note note) {

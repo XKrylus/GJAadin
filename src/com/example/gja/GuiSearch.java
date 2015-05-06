@@ -30,16 +30,14 @@ public class GuiSearch extends Window {
 	
 	OptionGroup options = new OptionGroup("Select search method");
 	
-	public int getCategory() {
-		int j = 0;
+	public Category getCategory() {
 		for (java.util.Iterator<String> i = (Iterator<String>) searchCategory.getItemIds().iterator(); i.hasNext();) {
     	    String iid = i.next();
     	    if (iid == searchCategory.getValue().toString()) {
-    	    	return j;
+    	    	return new Category(iid, null);
     	    }
-    	    j++;
     	}
-		return 0;
+		return null;
 	}
 	
 	public ArrayList<Tag> getTags() {
