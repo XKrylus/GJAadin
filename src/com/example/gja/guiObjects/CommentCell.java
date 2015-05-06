@@ -105,6 +105,7 @@ public class CommentCell extends VerticalLayout implements ClickListener {
 				if(commentOpen.getChildren().get(i).isChecked()) {
 					this.commentOpen.removeChild(commentOpen.getChildren().get(i));
 					this.comment.remove(i);
+					i = 0;
 				}
 			}
 		}

@@ -1,15 +1,11 @@
 package com.example.gja;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.Locale;
 import java.util.Set;
 
-import org.openqa.selenium.remote.server.handler.GetWindowPosition;
 
 import com.example.gja.guiObjects.CommentCell;
 import com.example.gja.guiObjects.ContentCell;
@@ -22,14 +18,10 @@ import com.example.gja.objects.Content.ContentType;
 import com.example.gja.objects.Note;
 import com.example.gja.objects.Note.state;
 import com.example.gja.objects.Tag;
-import com.ibm.icu.text.DateFormat;
 import com.vaadin.data.Item;
 import com.vaadin.data.Property;
 import com.vaadin.data.util.IndexedContainer;
-import com.vaadin.event.MouseEvents;
-import com.vaadin.server.ThemeResource;
 import com.vaadin.ui.*;
-import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.MenuBar.MenuItem;
 
 public class GuiMain  extends VerticalLayout{
@@ -51,6 +43,7 @@ public class GuiMain  extends VerticalLayout{
 	com.vaadin.ui.MenuBar.MenuItem topMenuBarOptions;
 	MenuItem editTags;
 	MenuItem editCategories;
+	MenuItem search;
 	
 	//List with Notes
 	public LinkedList<Note> notes = new LinkedList<Note>();
@@ -124,7 +117,7 @@ public class GuiMain  extends VerticalLayout{
 			content = new ContentCell(notes.get(i).getContent(), edit, parentUI, this, i);
 			
 			//String description = new String(notes.get(i).getDescription());
-			LabelRichCell description = new LabelRichCell(notes.get(i).getDescription(), edit);
+			LabelRichCell description = new LabelRichCell(notes.get(i).getDescription(), notes.get(i).getCategories(), categoriesGlobal, edit);
 			
 			
 			Date remindOn = notes.get(i).getReminder();
@@ -151,6 +144,8 @@ public class GuiMain  extends VerticalLayout{
 					else {
 						notes.get(index).getTags().set(selectedItem.getId() - 3, false);
 					}
+					//TAG EDITED IMMEDIATELY - SYNC WITH SERVER
+					request.editNote(currentUser, Integer.valueOf(selectedItem.getParent().getDescription()), notes.get(index));
 				}
 			};
 			
@@ -190,7 +185,7 @@ public class GuiMain  extends VerticalLayout{
 		topMenu.addComponent(topMenuBar);
 		topMenu.setComponentAlignment(topMenuBar, Alignment.MIDDLE_RIGHT);
 		topMenuBarOptions = topMenuBar.addItem("Options", null, null);
-		topMenuBarOptions.addItem("Search", null, null);
+		search = topMenuBarOptions.addItem("Search", null, null);
 		topMenuBarOptions.addItem("Sync", null, null);
 		editTags = topMenuBarOptions.addItem("Edit Tags", null,null);
 		editCategories = topMenuBarOptions.addItem("Edit Categories", null, null);
@@ -262,6 +257,7 @@ public class GuiMain  extends VerticalLayout{
 		
 		LabelRichCell x;
 		CommentCell commentCellx = null;
+		ContentCell contentCell;
 		
 		for(int i = 0; i < tableSize - categoriesGlobal.size(); i++) {
 			Item item = table.getItem(i + categoriesGlobal.size());
@@ -270,11 +266,18 @@ public class GuiMain  extends VerticalLayout{
 			//Description
 			x = (LabelRichCell) item.getItemProperty(columnDescription).getValue();
 			notes.get(i).setDescription(x.getRichText().getValue());
+			//Categories
+			notes.get(i).setCategory(x.getCategory());
+			//Tags
+			//TAGS ARE SERVED AUTOMATICALLY IN TABLE ITEM DEFINITION!! (GuiMain.java - line 144 - 156)
 			//Date - reminds on
 			notes.get(i).setReminder((Date) item.getItemProperty(columnRemindOn).getValue());
 			//Date - expires on
 			notes.get(i).setExpire((Date) item.getItemProperty(columnExpire).getValue());
-			//Content - TODO
+			//Content
+			contentCell = (ContentCell) item.getItemProperty(columnContent).getValue();
+			notes.get(i).getContent().setType(contentCell.content_local.getType());
+			notes.get(i).getContent().setValue(contentCell.content_local.getValue());
 			//Attachments - TODO
 			//Comments
 			commentCellx = (CommentCell) item.getItemProperty(columnComment).getValue();
@@ -282,7 +285,7 @@ public class GuiMain  extends VerticalLayout{
 		}
 		loadTable(notes);
 		// SERVER - Notes edited in various ways - update on server
-        request.updateNotes(notes);
+        request.updateNotes(currentUser, notes);
 	}
 
 	public GuiMain(GjaUI ui) {
@@ -329,6 +332,7 @@ public class GuiMain  extends VerticalLayout{
 		        for (Object itemId : selectedItemIds) {
 		          index.add((int)(itemId) - categoriesGlobal.size());
 		          }
+		        System.out.printf("INDEX TO REMOVE: %s\n", index);
 		        int j = 0;
 		        for(int i = 0; i < index.size(); i++) {
 		        	notes.remove(index.get(i) + j);
@@ -336,7 +340,7 @@ public class GuiMain  extends VerticalLayout{
 		        }
 		        loadTable(notes);
 		        // SERVER - Notes removed - update on server
-		        request.updateNotes(notes);
+		        request.updateNotes(currentUser, notes);
 		      }
 		    }));
 		notesSpaceButtons.addComponent(edit = new Button("Edit", new Button.ClickListener() {
@@ -356,20 +360,11 @@ public class GuiMain  extends VerticalLayout{
 		      }
 		    }));
 		
-		//Initial tags
-		for(int i = 0; i != 5; i++) {
-			Tag tag = new Tag ("Bena c." + String.valueOf(i));
-			tagsGlobal.add(tag);
-		}
-		
-		for(int i = 0; i < 5; i++) {
-			categoriesGlobal.add(new Category("Kategorie c. " + i, "Vychozi kategorie"));
-		}
 		
 		//Initial notes
 		String[] title = {"Nakup", "Prodej", "Vydej", "Binej"};
-		Content[] content = {new Content(ContentType.IMG, "images/logo.png"), new Content(ContentType.AUDIO, "audio/record.mp3"), 
-				new Content(ContentType.VIDEO, "video/video.mp4"), new Content(ContentType.NONE, null)};
+		Content[] content = {new Content(ContentType.NONE, null), new Content(ContentType.NONE, null), 
+				new Content(ContentType.NONE, null), new Content(ContentType.NONE, null)};
 		String[] description = {"Mleko 4 rohliky", "Vrtacka Bena", "4 lahve praveho Hamsika a jedna Zelena, hodne skorice a hlavne, hlavne, tresnovice", "Navstivit Hryzacke Kresice"};
 		Date[] inputReminder = {new Date(), new Date(), new Date(), new Date()};
 		Date[] inputExpire = {new Date(), new Date(), new Date(), new Date()};
@@ -388,9 +383,29 @@ public class GuiMain  extends VerticalLayout{
 		}
 		ArrayList<Content> attachments = new ArrayList<Content>();
 		
+		
+		
 		for(int i = 0; i < title.length; i++) {
 			notes.add(new Note(title[i], content[i], description[i], currentUser, inputReminder[i], inputExpire[i], state[i], setTags, categories[i], comments, attachments));
 		}
+		
+		//INITIAL NOTES WILL BE REMOVED, SET notes TO USER NOTES FROM SERVER
+		//notes = request.notesDownloadAll(currentUser);
+		
+		//Initial tags
+		for(int i = 0; i != 5; i++) {
+			Tag tag = new Tag ("Bena c." + String.valueOf(i));
+			tagsGlobal.add(tag);
+		}
+		
+		//Initial categories
+		for(int i = 0; i < 5; i++) {
+			categoriesGlobal.add(new Category("Kategorie c. " + i, "Vychozi kategorie"));
+		}
+		
+		//INITIAL TAGS AND CATEGORIES WILL BE REMOVED TOO - SET FROM SERVER
+		//categoriesGlobal = request.getCategories(currentUser);
+		//tagsGlobal = request.getTags(currentUser);
 		
 		//Load initial notes to table
 		loadTable(notes);

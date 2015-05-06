@@ -36,17 +36,22 @@ public class ProcessRequest {
 	//Note Managment
 	
 	//Download all notes
-	public LinkedList<Note> notesDownloadAll() {
+	public LinkedList<Note> notesDownloadAll(String user) {
 		return null;
 	}
 	
+	//Download notes with fulltext
+		public LinkedList<Note> notesDownloadFulltext(String user, String fulltext) {
+			return null;
+		}
+	
 	//Download notes from category
-	public LinkedList<Note> notesDownloadCategory(int CategoryId) {
+	public LinkedList<Note> notesDownloadCategory(String user, int CategoryId) {
 		return null;
 	}
 	
 	//Download notes with given tag
-	public LinkedList<Note> notesDownloadTag(String tagId) {
+	public LinkedList<Note> notesDownloadTag(String user, ArrayList<Tag> tags) {
 		return null;
 	}
 	
@@ -54,57 +59,57 @@ public class ProcessRequest {
 	//TODO!
 	
 	//Update all notes with local LinkedList, includes uploading new Notes (MOZNA (SNAD) NEBUDE POTREBA)
-	public void updateNotes(LinkedList<Note> notes) {
+	public void updateNotes(String user, LinkedList<Note> notes) {
 		
 	}
 	
-	//Upload single Note, by ID (SPIS NE)
-	public void uploadNote(Note note) {
+	//Upload single Note
+	public void uploadNote(String user, Note note) {
 		
 	}
 	
-	//Edit single Note, by ID (SPIS NE)
-	public void editNote(int id) {
+	//Edit single Note
+	public void editNote(String user, int id, Note note) {
 		
 	}
 	
-	//Remove single Note, by ID (SPIS NE)
-	public void removeNote(int id) {
+	//Remove single Note
+	public void removeNote(String user, int id) {
 		
 	}
 	
 	//Return tag List
-	public ArrayList<Tag> getTags() {
+	public ArrayList<Tag> getTags(String user) {
 		return null;
 	}
 	
 	//Add tag
-	public void addTag(Tag tag) {
+	public void addTag(String user, Tag tag) {
 		
 	}
 	
 	//Remove tag
-	public void removeTag(Tag tag) {
+	public void removeTag(String user, Tag tag) {
 		
 	}
 	
 	//Return Category list
-	public ArrayList<Category> getCategories() {
+	public ArrayList<Category> getCategories(String user) {
 		return null;
 	}
 	
 	//Add category
-	public void addCategory(Category category) {
+	public void addCategory(String user, Category category) {
 		
 	}
 	
 	//Remove category
-	public void removeCategory(Category category) {
+	public void removeCategory(String user, Category category) {
 		
 	}
 	
 	//Set new content for Note
-	public void setContent(Content content, Note note) {
+	public void setContent(String user, Content content, Note note) {
 		
 	}
 

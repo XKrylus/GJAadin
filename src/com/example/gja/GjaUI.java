@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
 
+import javax.servlet.ServletContext;
 import javax.servlet.annotation.WebServlet;
 
 import com.example.gja.logic.LoginProcess;
@@ -39,6 +40,7 @@ public class GjaUI extends UI {
 	protected GuiMain guiMain = new GuiMain(this);
 	protected ProcessRequest request = new ProcessRequest();
 	protected LoginProcess loginProcess = new LoginProcess();
+	protected ServletContext servletContext;
 	
 	protected void processLogin() {
 		login.buttonLogin.addClickListener(new Button.ClickListener() {
@@ -147,7 +149,7 @@ public class GjaUI extends UI {
 						Tag tag = new Tag(editTags.nameOfTag.getValue());
 						guiMain.tagsGlobal.add(tag);
 						// SERVER - Tag added - update on server
-				        request.addTag(tag);
+				        request.addTag(guiMain.currentUser, tag);
 						editTags.loadTags(guiMain.tagsGlobal);
 						guiMain.loadTable(guiMain.notes);
 					}
@@ -170,9 +172,10 @@ public class GjaUI extends UI {
 					            Object iid = (Object) i.next();
 					            if(editTags.tags.isSelected(iid))
 					            {
-					            	guiMain.tagsGlobal.remove(j);
 					            	// SERVER - Tag removed - update on server
-							        request.removeTag(guiMain.tagsGlobal.get(j));
+							        request.removeTag(guiMain.currentUser, guiMain.tagsGlobal.get(j));
+							      //LOCAL - REMOVE OR REMAIN?!!
+							        guiMain.tagsGlobal.remove(j);
 					            }
 					            j++;
 					        }
@@ -184,6 +187,46 @@ public class GjaUI extends UI {
 		};
 		
 		guiMain.editTags.setCommand(editTags);
+		
+		MenuBar.Command search = new MenuBar.Command() {
+
+			@Override
+			public void menuSelected(MenuItem selectedItem) {
+				GuiSearch search = new GuiSearch(guiMain.categoriesGlobal, guiMain.tagsGlobal);
+				addWindow(search);
+				
+				search.search.addClickListener(new Button.ClickListener() {
+					
+					//ODKOMENTOVAT!
+					
+					@Override
+					public void buttonClick(ClickEvent event) {
+						if(search.options.getValue() == "Fulltext") {
+							guiMain.notes = request.notesDownloadFulltext(guiMain.currentUser, search.searchFulltext.getValue());
+							System.out.printf("DOWNLOAD BY FULLTEXT: %s\n", search.searchFulltext.getValue());
+							//guiMain.loadTable(guiMain.notes);
+							//search.close();
+						}
+						else if(search.options.getValue() == "Category") {
+							guiMain.notes = request.notesDownloadCategory(guiMain.currentUser, search.getCategory());
+							System.out.printf("DOWNLOAD BY CATEGORY: %s\n", search.getCategory());
+							//guiMain.loadTable(guiMain.notes);
+							//search.close();
+						}
+						else if(search.options.getValue() == "Tags") {
+							guiMain.notes = request.notesDownloadTag(guiMain.currentUser, search.getTags());
+							System.out.printf("DOWNLOAD BY TAGS: %s\n", search.getTags());
+							//guiMain.loadTable(guiMain.notes);
+							//search.close();
+						}
+					}
+				});
+				
+			}
+			
+		};
+		
+		guiMain.search.setCommand(search);
 		
 		MenuBar.Command editCategories = new MenuBar.Command() {
 			
@@ -198,7 +241,7 @@ public class GjaUI extends UI {
 						Category category = new Category(editCategories.nameOfCategory.getValue(), "");
 						guiMain.categoriesGlobal.add(category);
 						// SERVER - Tag removed - update on server
-				        request.addCategory(category);
+				        request.addCategory(guiMain.currentUser, category);
 						editCategories.loadCategories(guiMain.categoriesGlobal);
 						guiMain.loadTable(guiMain.notes);
 					}
@@ -213,9 +256,15 @@ public class GjaUI extends UI {
 					            Object iid = (Object) i.next();
 					            if(editCategories.categories.isSelected(iid))
 					            {
-					            	guiMain.categoriesGlobal.remove(j);
 					            	// SERVER - Category removed - update on server
-							        request.removeCategory(guiMain.categoriesGlobal.get(j));
+							        request.removeCategory(guiMain.currentUser, guiMain.categoriesGlobal.get(j));
+							        //LOCAL - REMOVE OR REMAIN?!!
+							        guiMain.categoriesGlobal.remove(j);
+							        editCategories.loadCategories(guiMain.categoriesGlobal);
+							        //Removing of notes under category handled by server
+							        request.notesDownloadAll(guiMain.currentUser);
+							        guiMain.loadTable(guiMain.notes);
+							        break;
 					            }
 					            j++;
 					        }
@@ -238,6 +287,8 @@ public class GjaUI extends UI {
 		setContent(login);
 		clickListeners();
 		processLogin();
+		
+		servletContext = VaadinServlet.getCurrent().getServletContext();
 	}
 
 }
