@@ -92,6 +92,7 @@ public class GuiMain  extends VerticalLayout{
 	}
 	
 	private int getCategoryId(Category category) {
+		if(category == null) return 0;
 		for(int i = 0; i < categoriesGlobal.size(); i++) {
 			if(category.getName().equals(categoriesGlobal.get(i).getName())) 
 				return i;
@@ -390,16 +391,16 @@ public class GuiMain  extends VerticalLayout{
 		    }));
 		
 		//Initial tags
-		tagsGlobal.add(new Tag("Dùležité"));
-		tagsGlobal.add(new Tag("Poèká"));
-		tagsGlobal.add(new Tag("Co nejdøív"));
+		tagsGlobal.add(new Tag("Tag A"));
+		tagsGlobal.add(new Tag("Tag B"));
+		tagsGlobal.add(new Tag("Tag C"));
 		
 		//Initial categories
-		categoriesGlobal.add(new Category("Škola", "Vychozi kategorie"));
-		categoriesGlobal.add(new Category("Práce", "Vychozi kategorie"));
-		categoriesGlobal.add(new Category("Domácnost", "Vychozi kategorie"));
-		categoriesGlobal.add(new Category("Rodina", "Vychozi kategorie"));
-		categoriesGlobal.add(new Category("Zábava", "Vychozi kategorie"));
+		categoriesGlobal.add(new Category("School", "Sample"));
+		categoriesGlobal.add(new Category("Work", "Sample"));
+		categoriesGlobal.add(new Category("Household", "Sample"));
+		categoriesGlobal.add(new Category("Family", "Sample"));
+		categoriesGlobal.add(new Category("Entertainment", "Sample"));
 		
 		//INITIAL TAGS AND CATEGORIES WILL BE REMOVED TOO - SET FROM SERVER
 		//categoriesGlobal = request.getCategories(currentUser);
@@ -407,10 +408,14 @@ public class GuiMain  extends VerticalLayout{
 		
 		
 		//Initial notes
-		String[] title = {"GJA Projekt", "Odevzdat posudek", "Ventilace", "Navštívit babièku"};
+		String[] title = {"Lorem ipsum", "Dolor sit amet", "Consectetur adipiscing", "Sed do eiusmod"};
 		Content[] content = {new Content(ContentType.NONE, null), new Content(ContentType.NONE, null), 
 				new Content(ContentType.NONE, null), new Content(ContentType.NONE, null)};
-		String[] description = {"Dodìlat projekt do pøedmìtu GJA", "Dokonèit posudek o x.", "Opravit ventilaci v koupelnì", "Zajet do Svitav"};
+		String[] description = {
+				"<b>Lorem ipsum dolor sit amet</b>, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+				"Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+				"Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
+				"Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."};
 		Date[] inputReminder = {new Date(), new Date(), new Date(), new Date()};
 		Date[] inputExpire = {new Date(), new Date(), new Date(), new Date()};
 		state[] state = {null, null, null, null};
@@ -424,7 +429,7 @@ public class GuiMain  extends VerticalLayout{
 		Category[] categories = {categoriesGlobal.get(0),categoriesGlobal.get(1),categoriesGlobal.get(2),categoriesGlobal.get(3),categoriesGlobal.get(4)};
 		ArrayList<Comment> comments = new ArrayList<Comment>();
 		for(int i = 0; i < 2; i++) {
-			comments.add(new Comment(this.currentUser, i + ": Tady je komentáø..."));
+			comments.add(new Comment(this.currentUser, i + ": This is sample comment."));
 		}
 		ArrayList<Content> attachments = new ArrayList<Content>();
 		
