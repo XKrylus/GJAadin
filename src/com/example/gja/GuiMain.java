@@ -71,7 +71,7 @@ public class GuiMain  extends VerticalLayout{
 	private static String columnContent = "Content";
 	private static String columnRemove = "Remove";
 	
-	private static String noCategory = null;
+	private static Category noCategory = null;
 	
 	
 	//GjaUI
@@ -113,6 +113,7 @@ public class GuiMain  extends VerticalLayout{
 			table.getItem(i).getItemProperty(columnTitle).setReadOnly(true);
 			table.getItem(i).getItemProperty(columnRemindOn).setReadOnly(true);
 			table.getItem(i).getItemProperty(columnExpire).setReadOnly(true);
+			table.getItem(i).getItemProperty(columnRemove).setReadOnly(true);
 			table.setChildrenAllowed(i, true);
 			tableSize++;
 		}
@@ -171,7 +172,7 @@ public class GuiMain  extends VerticalLayout{
 			object = new Object[]{title, description, remindOn/*, inputExpire*/, comment, tags, content};
 			
 			table.addItem(object, i + categoriesGlobal.size());
-			if(notes.get(i).getCategories().getName() != noCategory) {
+			if(notes.get(i).getCategories() != noCategory) {
 				table.setParent(i + categoriesGlobal.size(), getCategoryId(notes.get(i).getCategories()));
 			}
 			table.setChildrenAllowed(i + categoriesGlobal.size(), false);
@@ -357,7 +358,7 @@ public class GuiMain  extends VerticalLayout{
 		        for (Object itemId : selectedItemIds) {
 		          index.add((int)(itemId) - categoriesGlobal.size());
 		          }
-		        //System.out.printf("INDEX TO REMOVE: %s\n", index);
+		        System.out.printf("INDEX TO REMOVE: %s\n", index);
 		        int j = 0;
 		        for(int i = 0; i < index.size(); i++) {
 		        	notes.remove(index.get(i) + j);
@@ -365,6 +366,9 @@ public class GuiMain  extends VerticalLayout{
 			        request.removeNote(currentUser, index.get(i));
 		        	j--;
 		        }
+		        for (Object itemId : selectedItemIds) {
+			          selectedItemIds.remove(itemId);
+			          }
 		        loadTable(notes);
 		      }
 		    }));

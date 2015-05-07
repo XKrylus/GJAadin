@@ -20,6 +20,7 @@ import com.example.gja.objects.Note.state;
 import com.vaadin.annotations.Theme;
 import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.server.Page;
+import com.vaadin.server.ThemeResource;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinServlet;
 import com.vaadin.ui.Button;
@@ -289,6 +290,8 @@ public class GjaUI extends UI {
 	protected void init(VaadinRequest request) {
 		
 		setContent(login);
+		login.imageAppIcon.setIcon(new ThemeResource("images/GJAlogo.png"));
+		login.textFields.setMargin(true);
 		processLogin();
 		
 		servletContext = VaadinServlet.getCurrent().getServletContext();

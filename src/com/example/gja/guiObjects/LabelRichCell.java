@@ -22,7 +22,7 @@ public class LabelRichCell extends VerticalLayout implements ClickListener {
 
 
     private Label richText;
-    private static String noCategoty = null;
+    private static Category noCategoty = null;
     Button b;
     Button c;
 
@@ -58,7 +58,7 @@ public class LabelRichCell extends VerticalLayout implements ClickListener {
         loadContainer(categoriesGlobal);
         selectCategory.setContainerDataSource(container);
         
-        if(!(category.getName() == noCategoty)) {
+        if(!(category == noCategoty)) {
         	selectCategory.setValue(loadCategory(category));
         }
         
