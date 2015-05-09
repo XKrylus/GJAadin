@@ -10,12 +10,11 @@ public class LoginProcess {
 	}
 	
 	public boolean confirmRegister(String userName, String password) {
-		if(request.userRegister(userName, password)) return true;
-		else return false;
+		request.userRegister(userName, password); 
+		return true;
 	}
 	
 	public void confirmLogout(String userName) {
-		request.userLogout(userName);
 	}
 	
 	public LoginProcess() {

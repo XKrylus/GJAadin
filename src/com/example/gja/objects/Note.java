@@ -4,63 +4,60 @@ package com.example.gja.objects;
 import java.util.ArrayList;
 import java.util.Date;
 
-public class Note {
+import com.google.gwt.user.client.rpc.IsSerializable;
+
+public class Note  implements IsSerializable {
 	
-	public enum state {
-		DOT, EXCLAMATION, CHECK
-	}
-	//private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-	
+	private long id;
 	private String title;
 	private Content content;	//Text of note, containing multimedial references
 	private String user;
 	private String description;
-	private ArrayList<Content> attachments;
+	private Category category;
 	private Date reminder;	//Date of reminder
 	private Date created;	//Date of note creation
 	private Date expire;	//Date of note creation
-	private state state;//state of note (standard, warning, confirmed(but not disposed of))
-	private ArrayList<Boolean> tags;
-	private Category category;
+	private ArrayList<Tag> tags;	
+	private ArrayList<Content> attachments;
 	private ArrayList<Comment> comments;
+	private boolean checked = false;
 
-	/**
-	 * General constructor for new note
-	 * @param inputText			text of note, including multimedia
-	 * @param inputReminder		reminder date of note
-	 * @param inputExpire		expire date of note
-	 * @param inputTag			selected tags for note
-	 */
-	public Note(String title, Content content, String desc, String user, Date inputReminder, Date inputExpire, /*PRYC*/state state, ArrayList<Boolean> tags,
-				Category category, ArrayList<Comment> comments, ArrayList<Content> attachments) {
+	public Note(String title, Content content, String desc, String user, Date inputReminder, Date inputExpire, ArrayList<Tag> tagsx,
+				Category category, ArrayList<Comment> commentsx, ArrayList<Content> attachmentsx) {
 		this.title = title;
 		this.content = content;
 		this.reminder = inputReminder;
 		this.created = new Date();
 		this.expire = inputExpire;
-		this.state = state.DOT;
 		this.user = user;
 		this.description = desc;
-		/*if(!tags.equals(null)) {
-			this.tags = tags;
-		} else {
-			this.tags = new ArrayList<Tag>();
-		}*/
-		this.tags = tags;
-		
 		this.category = category;
+		this.setChecked(false);
 		
-		if(!comments.equals(null)) {
-			this.comments = comments;
-		} else {
-			this.comments = new ArrayList<Comment>();
+		this.tags = new ArrayList<Tag>();
+		for(int i = 0; i < tagsx.size(); i++) {
+			tags.add(tagsx.get(i));
 		}
 		
-		if(!attachments.equals(null)) {
-			this.attachments = attachments;
-		} else {
-			this.attachments = new ArrayList<Content>();
+		this.comments = new ArrayList<Comment>();
+		for(int i = 0; i < commentsx.size(); i++) {
+			comments.add(commentsx.get(i));
 		}
+		
+
+		this.attachments = new ArrayList<Content>();
+		for(int i = 0; i < attachmentsx.size(); i++) {
+			attachments.add(attachmentsx.get(i));
+		}
+
+	}
+	
+	public long getId(){
+		return this.id;
+	}
+	
+	public void setId(long id){
+		this.id = id;
 	}
 	
 	public void setDescription(String desc){
@@ -136,38 +133,44 @@ public class Note {
 	}
 
 	/**
-	 * @return the state
-	 */
-	public state getState() {
-		return state;
-	}
-
-	/**
-	 * @param state the state to set
-	 */
-	public void setState(state state) {
-		this.state = state;
-	}
-
-	/**
 	 * @return the tag
 	 */
-	public ArrayList<Boolean> getTags() {
+	public ArrayList<Tag> getTags() {
 		return this.tags;
 	}
 
 	/**
 	 * @param tag the tag to set
 	 */
-	public void setTag(Boolean value, int tag) {
-		this.tags.set(tag, value);
+	public void addTag(Tag tag) {
+		boolean add = true;
+		for(int i = 0; i < this.tags.size(); i++) {
+			if(tag.getValue().equals(this.tags.get(i).getValue())) {
+				add = false;
+			}
+		}
+		if(add)this.tags.add(tag);
 	}
 	
 	public void removeTag(Tag tag){
 		int index = 0;
-		if((index = this.tags.indexOf(tag)) != -1){
-			this.tags.remove(index);
+		boolean remove = false;
+		for(int i = 0; i < this.tags.size(); i++) {
+			if(tag.getValue().equals(this.tags.get(i).getValue())) {
+				remove = true;
+				index = i;
+			}
 		}
+		if(remove)this.tags.remove(index);
+	}
+	
+	public boolean containsTag(Tag tag) {
+		for(int i = 0; i < this.tags.size(); i++) {
+			if(tag.getValue().equals(this.tags.get(i).getValue())) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	public Category getCategories(){
@@ -215,6 +218,14 @@ public class Note {
 		if((index = this.attachments.indexOf(content)) != -1){
 			this.attachments.remove(index);
 		}
+	}
+	
+	public boolean isChecked() {
+		return checked;
+	}
+
+	public void setChecked(boolean checked) {
+		this.checked = checked;
 	}
 
 }

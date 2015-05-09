@@ -1,7 +1,9 @@
 package com.example.gja.guiObjects;
 
 import java.util.ArrayList;
+import java.util.Date;
 
+import com.example.gja.logic.ProcessRequest;
 import com.example.gja.objects.Comment;
 import com.example.gja.objects.Content;
 import com.vaadin.ui.Alignment;
@@ -21,12 +23,14 @@ import com.vaadin.ui.VerticalLayout;
 public class CommentCell extends VerticalLayout implements ClickListener {
 
 	private TextArea newComment;
+	private String currentUser;
+	private ProcessRequest request;
 	private ArrayList<Comment> comment = new ArrayList();
 	private com.vaadin.ui.MenuBar.MenuItem commentOpen;
     private Button b;
     private Button c;
     
-    private int identifier;
+    private long identifier;
     
     private MenuBar commentBar;
     
@@ -48,7 +52,10 @@ public class CommentCell extends VerticalLayout implements ClickListener {
     	}
     }
 
-    public CommentCell(ArrayList<Comment> commentInput, Button edit, int i) {
+    public CommentCell(ArrayList<Comment> commentInput, Button edit, long i, String currentUser, ProcessRequest request) {
+    	
+    	this.currentUser = currentUser;
+    	this.request = request;
     	
     	identifier = i;
     	//comment = commentInput;
@@ -95,7 +102,9 @@ public class CommentCell extends VerticalLayout implements ClickListener {
 	public void buttonClick(ClickEvent event) {
 		//Add comment
 		if(event.getButton() == b) {
-		this.comment.add(new Comment("bena", newComment.getValue()));
+		this.comment.add(new Comment(currentUser, newComment.getValue(), new Date()));
+		this.comment.get(this.comment.size() - 1).setId(request.addComment(currentUser, identifier, new Comment(currentUser, newComment.getValue(), new Date())));
+		
 		loadCommentTable();
 		newComment.setValue("");
 		}
@@ -104,6 +113,7 @@ public class CommentCell extends VerticalLayout implements ClickListener {
 			for(int i = 0; i < comment.size(); i++) {
 				if(commentOpen.getChildren().get(i).isChecked()) {
 					this.commentOpen.removeChild(commentOpen.getChildren().get(i));
+					request.removeComment(comment.get(i).getId());
 					this.comment.remove(i);
 					i = 0;
 				}
@@ -116,7 +126,7 @@ public class CommentCell extends VerticalLayout implements ClickListener {
 		return this.comment;
 	}
 	
-	public int getIdentifier() {
+	public long getIdentifier() {
 		return this.identifier;
 	}
 }

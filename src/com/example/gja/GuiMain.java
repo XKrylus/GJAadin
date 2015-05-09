@@ -8,6 +8,9 @@ import java.util.Set;
 
 
 
+
+import org.jboss.netty.handler.traffic.GlobalTrafficShapingHandler;
+
 import com.example.gja.guiObjects.CommentCell;
 import com.example.gja.guiObjects.ContentCell;
 import com.example.gja.guiObjects.LabelRichCell;
@@ -17,7 +20,6 @@ import com.example.gja.objects.Comment;
 import com.example.gja.objects.Content;
 import com.example.gja.objects.Content.ContentType;
 import com.example.gja.objects.Note;
-import com.example.gja.objects.Note.state;
 import com.example.gja.objects.Tag;
 import com.vaadin.data.Item;
 import com.vaadin.data.Property;
@@ -26,6 +28,11 @@ import com.vaadin.ui.*;
 import com.vaadin.ui.MenuBar.MenuItem;
 
 public class GuiMain  extends VerticalLayout{
+	
+	
+	//PLACEHOLDER: ID OF NOTE
+	long ID = 0;
+	
 	
 	//Current user
 	public String currentUser = "dev";
@@ -45,6 +52,7 @@ public class GuiMain  extends VerticalLayout{
 	MenuItem editTags;
 	MenuItem editCategories;
 	MenuItem search;
+	MenuItem sync;
 	
 	//List with Notes
 	public LinkedList<Note> notes = new LinkedList<Note>();
@@ -92,12 +100,13 @@ public class GuiMain  extends VerticalLayout{
 	}
 	
 	private int getCategoryId(Category category) {
-		if(category == null) return 0;
+		if(category == null) return -1;
+		else if(category.getName() == null) return -1;
 		for(int i = 0; i < categoriesGlobal.size(); i++) {
 			if(category.getName().equals(categoriesGlobal.get(i).getName())) 
 				return i;
 		}
-		return 0;
+		return -1;
 	}
 	
 	protected void loadTable(LinkedList<Note> notes) {
@@ -129,15 +138,14 @@ public class GuiMain  extends VerticalLayout{
 			ContentCell content;
 			content = new ContentCell(notes.get(i).getContent(), edit, parentUI, this, i);
 			
-			//String description = new String(notes.get(i).getDescription());
 			LabelRichCell description = new LabelRichCell(notes.get(i).getDescription(), notes.get(i).getCategories(), categoriesGlobal, edit);
 			
 			
 			Date remindOn = notes.get(i).getReminder();
-			Date inputExpire = notes.get(i).getExpire();
+			//Date inputExpire = notes.get(i).getExpire();
 			
 			ArrayList<Comment> hold = notes.get(i).getComments();
-			CommentCell comment = new CommentCell(hold, edit, i);
+			CommentCell comment = new CommentCell(hold, edit, notes.get(i).getId(), currentUser, request);
 			
 			
 			//MENU BAR PRO TAGY - SLOZITEC!!
@@ -152,22 +160,22 @@ public class GuiMain  extends VerticalLayout{
 				public void menuSelected(com.vaadin.ui.MenuBar.MenuItem selectedItem) {
 					int index = Integer.valueOf(selectedItem.getParent().getDescription());
 					if(selectedItem.isChecked()) {
-						notes.get(index).getTags().set(selectedItem.getId() - 3, true);
+						//ADD TAG TO NOTE -> SYNCING WITH SERVER IMMEDIATELY
+						notes.get(index).addTag(new Tag(tagsGlobal.get(selectedItem.getId() - 3).getValue()));
+						request.addTagToNote(currentUser, notes.get(index).getId(), tagsGlobal.get(selectedItem.getId() - 3).getId());
 					}
 					else {
-						notes.get(index).getTags().set(selectedItem.getId() - 3, false);
+						//REMOVE TAG FROM NOTE -> SYNCING WITH SERVER IMMEDIATELY
+						notes.get(index).removeTag(tagsGlobal.get(selectedItem.getId() - 3));
+						request.removeTagFromNote(notes.get(index).getId(), tagsGlobal.get(selectedItem.getId() - 3).getId());
 					}
-					//TAG EDITED IMMEDIATELY - SYNC WITH SERVER
-					request.editNote(currentUser, Integer.valueOf(selectedItem.getParent().getDescription()), notes.get(index));
 				}
 			};
+
 			
 			for(int j = 0; j < tagsGlobal.size(); j++) {
 				tagsOpen.addItem(tagsGlobal.get(j).getValue(), checked).setCheckable(true);
-				if(notes.get(i).getTags().size() < j + 1) {
-					notes.get(i).getTags().add(false);
-				}
-				tagsOpen.getChildren().get(j).setChecked(notes.get(i).getTags().get(j));
+				tagsOpen.getChildren().get(j).setChecked(notes.get(i).containsTag(tagsGlobal.get(j)));
 			}			
 			
 			object = new Object[]{title, description, remindOn/*, inputExpire*/, comment, tags, content};
@@ -201,7 +209,7 @@ public class GuiMain  extends VerticalLayout{
 		topMenu.setComponentAlignment(topMenuBar, Alignment.MIDDLE_RIGHT);
 		topMenuBarOptions = topMenuBar.addItem("Options", null, null);
 		search = topMenuBarOptions.addItem("Search", null, null);
-		topMenuBarOptions.addItem("Sync", null, null);
+		sync = topMenuBarOptions.addItem("Sync", null, null);
 		editTags = topMenuBarOptions.addItem("Edit Tags", null,null);
 		editCategories = topMenuBarOptions.addItem("Edit Categories", null, null);
 		
@@ -286,31 +294,38 @@ public class GuiMain  extends VerticalLayout{
 		
 		for(int i = 0; i < tableSize - categoriesGlobal.size(); i++) {
 			Item item = table.getItem(i + categoriesGlobal.size());
+			//
+			//TODO - check if CHANGE IS MADE!
+			// all values of all notes are updated simultaneously
 			//Title
 			notes.get(i).setTitle(String.valueOf(item.getItemProperty(columnTitle).getValue()));
+			request.changeTitle(notes.get(i).getId(), notes.get(i).getTitle());
 			//Description
 			x = (LabelRichCell) item.getItemProperty(columnDescription).getValue();
 			notes.get(i).setDescription(x.getRichText().getValue());
+			request.changeDescription(notes.get(i).getId(), notes.get(i).getDescription());
 			//Categories
 			notes.get(i).setCategory(x.getCategory());
+			request.changeCategory(notes.get(i).getId(), notes.get(i).getCategories().getId());
 			//Tags
 			//TAGS ARE SERVED AUTOMATICALLY IN TABLE ITEM DEFINITION!! (GuiMain.java - line 144 - 156)
 			//Date - reminds on
 			notes.get(i).setReminder((Date) item.getItemProperty(columnRemindOn).getValue());
+			request.changeReminder(notes.get(i).getId(), notes.get(i).getReminder());
 			//Date - expires on
 			//notes.get(i).setExpire((Date) item.getItemProperty(columnExpire).getValue());
 			//Content
 			contentCell = (ContentCell) item.getItemProperty(columnContent).getValue();
 			notes.get(i).getContent().setType(contentCell.content_local.getType());
 			notes.get(i).getContent().setValue(contentCell.content_local.getValue());
+			request.setContent(currentUser, notes.get(i).getContent(), notes.get(i));
 			//Attachments - TODO
 			//Comments
+			//TAGS ARE SERVED AUTOMATICALLY IN COMMENTCELL!! (CommentCell.java)
 			commentCellx = (CommentCell) item.getItemProperty(columnComment).getValue();
 			notes.get(i).setComments(commentCellx.getCommentList());
-			request.editNote(currentUser, i, notes.get(i));
 		}
 		loadTable(notes);
-		// SERVER - Notes edited in various ways - update on server
 	}
 
 	public GuiMain(GjaUI ui) {
@@ -362,9 +377,9 @@ public class GuiMain  extends VerticalLayout{
 		        System.out.printf("INDEX TO REMOVE: %s\n", index);
 		        int j = 0;
 		        for(int i = 0; i < index.size(); i++) {
+		        	request.removeNote(notes.get(index.get(i) + j).getId());
 		        	notes.remove(index.get(i) + j);
 		        	// SERVER - Notes removed - update on server
-			        request.removeNote(currentUser, index.get(i));
 		        	j--;
 		        }
 		        for (Object itemId : selectedItemIds) {
@@ -386,6 +401,7 @@ public class GuiMain  extends VerticalLayout{
 				//Disable buttons while in edit mode
 				notesSpaceButtons.getComponent(0).setEnabled(!editable);
 				addNote.setEnabled(!editable);
+				logout.setEnabled(!editable);
 				topMenuBar.setEnabled(!editable);
 		      }
 		    }));
@@ -418,25 +434,21 @@ public class GuiMain  extends VerticalLayout{
 				"Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."};
 		Date[] inputReminder = {new Date(), new Date(), new Date(), new Date()};
 		Date[] inputExpire = {new Date(), new Date(), new Date(), new Date()};
-		state[] state = {null, null, null, null};
-		ArrayList<Boolean> setTags = new  ArrayList<Boolean>();
+		ArrayList<Tag> setTags = new  ArrayList<Tag>();
 		for(int i = 0; i != tagsGlobal.size(); i++) {
-			Boolean tag;
-			if(i < 2)tag = true;
-			else tag = false;
-			setTags.add(tag);
+			if(i < 2)setTags.add(tagsGlobal.get(i));
 		}
 		Category[] categories = {categoriesGlobal.get(0),categoriesGlobal.get(1),categoriesGlobal.get(2),categoriesGlobal.get(3),categoriesGlobal.get(4)};
 		ArrayList<Comment> comments = new ArrayList<Comment>();
 		for(int i = 0; i < 2; i++) {
-			comments.add(new Comment(this.currentUser, i + ": This is sample comment."));
+			comments.add(new Comment(this.currentUser, i + ": This is sample comment.", new Date()));
 		}
 		ArrayList<Content> attachments = new ArrayList<Content>();
 		
 		
 		
 		for(int i = 0; i < title.length; i++) {
-			notes.add(new Note(title[i], content[i], description[i], currentUser, inputReminder[i], inputExpire[i], state[i], setTags, categories[i], comments, attachments));
+			notes.add(new Note(title[i], content[i], description[i], currentUser, inputReminder[i], inputExpire[i], setTags, categories[i], comments, attachments));
 		}
 		
 		//INITIAL NOTES WILL BE REMOVED, SET notes TO USER NOTES FROM SERVER

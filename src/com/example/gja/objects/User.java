@@ -1,8 +1,11 @@
 package com.example.gja.objects;
 
-public class User {
+import com.google.gwt.user.client.rpc.IsSerializable;
+
+public class User  implements IsSerializable {
 	private String name;
 	private String pwd;
+	private long id;
 	
 	public User(String name, String pwd){
 		this.name = name;
@@ -24,5 +27,13 @@ public class User {
 		} else {
 			return false;
 		}
+	}
+	
+	public long getId(){
+		return this.id;
+	}
+	
+	public void setId(long id){
+		this.id = id;
 	}
 }
