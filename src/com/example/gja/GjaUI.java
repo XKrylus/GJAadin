@@ -287,6 +287,7 @@ public class GjaUI extends UI {
 			
 			@Override
 			public void menuSelected(MenuItem selectedItem) {
+				guiMain.checkExpiration();
 				guiMain.tagsGlobal = request.getTags(guiMain.currentUser);
 				guiMain.categoriesGlobal = request.getCategories(guiMain.currentUser);
 				guiMain.notes = request.notesDownloadAll(guiMain.currentUser);

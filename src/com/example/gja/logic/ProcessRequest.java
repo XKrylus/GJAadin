@@ -114,7 +114,7 @@ public class ProcessRequest {
 	public void changeExpire(long id, Date date) {
 	}
 	
-	//odstrani obsah poznamky z datastore
+	//odstrani obsah poznamky z datastore - NOT USED!
 	public void removeContent(long id) {
 	} 
 	
@@ -139,12 +139,12 @@ public class ProcessRequest {
 	public void addTagToNote(String user, long noteId, long tagId) {
 	} 
 	
-	//prida prilohu k poznamke v datastore
+	//prida prilohu k poznamke v datastore - NOT IMPLEMENTED!
 	public long addAttachment(String user, long noteId, Content attachment) {
 		return 0;
 	}
 	
-	//odstrani prilohu k poznamke v datastore
+	//odstrani prilohu k poznamke v datastore - NOT IMPLEMENTED!
 	public void removeAttachment(long id) {
 	}
 	
