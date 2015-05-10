@@ -54,7 +54,7 @@ public class ContentCell extends VerticalLayout implements ClickListener {
 	        	                  .getBaseDirectory().getAbsolutePath();
 
 	        	// Image as a file resource
-	        	String path = VaadinServlet.getCurrent().getServletContext().getRealPath("/content/");
+	        	String path = VaadinServlet.getCurrent().getServletContext().getRealPath("");
 	        	File file = new File(path, filename);
 	        	fos = new FileOutputStream(file);
 	            switch(selectType.getValue().toString()) {

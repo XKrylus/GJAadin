@@ -95,43 +95,7 @@ public class GuiMain  extends VerticalLayout{
 	private static final long serialVersionUID = 1L;
 	
 	private void sampleNotes() {
-		//Initial tags
-		tagsGlobal.add(new Tag("Tag A"));
-		tagsGlobal.add(new Tag("Tag B"));
-		tagsGlobal.add(new Tag("Tag C"));
 		
-		//Initial categories
-		categoriesGlobal.add(new Category("School", "Sample"));
-		categoriesGlobal.add(new Category("Work", "Sample"));
-		categoriesGlobal.add(new Category("Household", "Sample"));
-		categoriesGlobal.add(new Category("Family", "Sample"));
-		categoriesGlobal.add(new Category("Entertainment", "Sample"));
-		
-		//Initial notes
-		String[] title = {"Lorem ipsum", "Dolor sit amet", "Consectetur adipiscing", "Sed do eiusmod"};
-		Content[] content = {new Content(ContentType.NONE, null), new Content(ContentType.NONE, null), 
-				new Content(ContentType.NONE, null), new Content(ContentType.NONE, null)};
-		String[] description = {
-				"<b>Lorem ipsum dolor sit amet</b>, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-				"Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
-				"Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
-				"Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."};
-		Date[] inputReminder = {new Date(), new Date(), new Date(), new Date()};
-		Date[] inputExpire = {new Date(), new Date(), new Date(), new Date()};
-		ArrayList<Tag> setTags = new  ArrayList<Tag>();
-		for(int i = 0; i != tagsGlobal.size(); i++) {
-			if(i < 2)setTags.add(tagsGlobal.get(i));
-		}
-		Category[] categories = {categoriesGlobal.get(0),categoriesGlobal.get(1),categoriesGlobal.get(2),categoriesGlobal.get(3),categoriesGlobal.get(4)};
-		ArrayList<Comment> comments = new ArrayList<Comment>();
-		for(int i = 0; i < 2; i++) {
-			comments.add(new Comment(this.currentUser, i + ": This is sample comment.", new Date()));
-		}
-		ArrayList<Content> attachments = new ArrayList<Content>();
-		
-		for(int i = 0; i < title.length; i++) {
-			notes.add(new Note(title[i], content[i], description[i], currentUser, inputReminder[i], inputExpire[i], setTags, categories[i], comments, attachments));
-		}
 	}
 	
 	
@@ -341,6 +305,10 @@ public class GuiMain  extends VerticalLayout{
 		LabelRichCell x;
 		CommentCell commentCellx = null;
 		ContentCell contentCell;
+		if(notes.size() == 0) {
+			loadTable(notes);
+			return;
+		}
 		
 		for(int i = 0; i < tableSize - categoriesGlobal.size(); i++) {
 			Item item = table.getItem(i + categoriesGlobal.size());
@@ -442,7 +410,6 @@ public class GuiMain  extends VerticalLayout{
 
 			@Override
 		      public void buttonClick(Button.ClickEvent event) {
-				checkExpiration();
 				editable = !editable;
 				table.setEditable(editable);
 				//Update notes after leaving edit mode
@@ -464,7 +431,43 @@ public class GuiMain  extends VerticalLayout{
 		//INITIAL NOTES WILL BE REMOVED, SET notes TO USER NOTES FROM SERVER
 		//notes = request.notesDownloadAll(currentUser);
 		
-		sampleNotes();
+		//Initial tags
+		tagsGlobal.add(new Tag("Tag A"));
+		tagsGlobal.add(new Tag("Tag B"));
+		tagsGlobal.add(new Tag("Tag C"));
+		
+		//Initial categories
+		categoriesGlobal.add(new Category("School", "Sample"));
+		categoriesGlobal.add(new Category("Work", "Sample"));
+		categoriesGlobal.add(new Category("Household", "Sample"));
+		categoriesGlobal.add(new Category("Family", "Sample"));
+		categoriesGlobal.add(new Category("Entertainment", "Sample"));
+		
+		//Initial notes
+		String[] title = {"Lorem ipsum", "Dolor sit amet", "Consectetur adipiscing", "Sed do eiusmod"};
+		Content[] content = {new Content(ContentType.NONE, null), new Content(ContentType.NONE, null), 
+				new Content(ContentType.NONE, null), new Content(ContentType.NONE, null)};
+		String[] description = {
+				"<b>Lorem ipsum dolor sit amet</b>, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+				"Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+				"Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
+				"Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."};
+		Date[] inputReminder = {new Date(), new Date(), new Date(), new Date()};
+		Date[] inputExpire = {new Date(), new Date(), new Date(), new Date()};
+		ArrayList<Tag> setTags = new  ArrayList<Tag>();
+		for(int i = 0; i != tagsGlobal.size(); i++) {
+			if(i < 2)setTags.add(tagsGlobal.get(i));
+		}
+		Category[] categories = {categoriesGlobal.get(0),categoriesGlobal.get(1),categoriesGlobal.get(2),categoriesGlobal.get(3),categoriesGlobal.get(4)};
+		ArrayList<Comment> comments = new ArrayList<Comment>();
+		for(int i = 0; i < 2; i++) {
+			comments.add(new Comment(this.currentUser, i + ": This is sample comment.", new Date()));
+		}
+		ArrayList<Content> attachments = new ArrayList<Content>();
+		
+		for(int i = 0; i < title.length; i++) {
+			notes.add(new Note(title[i], content[i], description[i], currentUser, inputReminder[i], inputExpire[i], setTags, categories[i], comments, attachments));
+		}
 		
 		
 		
