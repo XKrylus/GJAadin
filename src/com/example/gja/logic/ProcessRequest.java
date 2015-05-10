@@ -4,16 +4,24 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
 
+import org.fusesource.restygwt.client.Method;
+import org.fusesource.restygwt.client.MethodCallback;
+
+import com.example.gja.comm.Comm;
 import com.example.gja.objects.Category;
 import com.example.gja.objects.Content;
 import com.example.gja.objects.Comment;
 import com.example.gja.objects.Note;
 import com.example.gja.objects.Tag;
+import com.google.gwt.core.client.GWT;
+import com.vaadin.ui.Window;
 
 public class ProcessRequest {
 	
 	private static String SAMPLE_USER = "Honza";
 	private static String SAMPLE_PASSWORD = "bewna";
+	
+	//private Comm client = GWT.create(Comm.class);
 	
 	public ProcessRequest() {
 		
@@ -22,6 +30,22 @@ public class ProcessRequest {
 	//User Managment
 	//Login User
 	public boolean userLogin(String userName, String password) {
+		
+		/*client.userLogin(userName, password, new MethodCallback<String>() {
+			
+			@Override
+			public void onSuccess(Method method, String response) {
+				System.out.println(response);
+				
+			}
+			
+			@Override
+			public void onFailure(Method method, Throwable exception) {
+				System.out.println("Error: "+exception);
+				
+			}
+		});*/
+		
 		if(userName.equals(SAMPLE_USER) && password.equals(SAMPLE_PASSWORD)) return true;
 		else return false;
 	}
